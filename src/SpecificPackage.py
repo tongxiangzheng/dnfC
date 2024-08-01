@@ -117,7 +117,7 @@ class Counter:
 		self.cnt+=1
 		return self.cnt
 class SpecificPackage:
-	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,source,status="uninstalled",repoURL=None,fileName=""):
+	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,status="uninstalled",repoURL=None,fileName=""):
 		self.packageInfo=packageInfo
 		self.fullName=fullName
 		self.providesInfo=provides
@@ -129,7 +129,6 @@ class SpecificPackage:
 		self.repoURL=repoURL
 		self.fileName=fileName
 		self.getGitLinked=False
-		self.source=source
 	
 	def setGitLink(self):
 		if self.getGitLinked is True:

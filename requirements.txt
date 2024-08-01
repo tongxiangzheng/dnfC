@@ -2,4 +2,4 @@ loguru
 pycurl
 certifi
 wget
-lz4
+pyzstd

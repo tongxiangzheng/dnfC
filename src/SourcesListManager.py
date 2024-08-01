@@ -1,93 +1,145 @@
 import os
 import RepoFileManager
 import SpecificPackage
+import xml.dom.minidom
 from loguru import logger as log
-class sourceConfigItem:
-	def __init__(self,url,dist,channel):
-		self.url=url
-		self.url_without_prefix=url.split('//')[1].split('/')[0]
-		self.dist=dist
-		self.channel=channel
-		self.repoFiles=dict()
-		with os.popen("dpkg --print-architecture") as f:
-			self.arch=f.read().strip()
-	def getFilePath(self):
+import dnf
+import json
 
-		return '/var/lib/apt/lists/'+self.url_without_prefix+'_ubuntu_dists_'+self.dist+'_'+self.channel+"_binary-"+self.arch+"_Packages"
+class SourceConfigItem:
+	def __init__(self,dist,primaryFilePath,repoURL):
+		self.dist=dist
+		self.primaryFilePath=primaryFilePath
+		self.repoFiles=dict()
+		self.repoURL=repoURL
+		#self.machineArch=machineArch
 	def getGitLink(self,name,arch):
 		#abandon
 		log.warning("abandon")
-		repoPath=self.getFilePath()
+		repoPath=self.primaryFilePath
 		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,"ubuntu",self.dist)
+			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,"centos",self.dist,self.repoURL)
 		return self.repoFiles[repoPath].getGitLink(name)
-	def getSpecificPackage(self,name,version,release)->SpecificPackage.SpecificPackage:
-		repoPath=self.getFilePath()
+	def getSpecificPackage(self,name,version,release,arch)->SpecificPackage.SpecificPackage:
+		repoPath=self.primaryFilePath
 		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,"ubuntu",self.dist)
-		return self.repoFiles[repoPath].queryPackage(name,version,release)
+			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,"centos",self.dist,self.repoURL)
+		return self.repoFiles[repoPath].queryPackage(name,version,release,arch)
 
-
-def parseRPMSources(data,binaryConfigItems,srcConfigItems):
-	Types=None
-	URIs=None
-	Suites=[]
-	Components=[]
+def parseRPMSources(data):
+	name=None
+	baseurl=None
+	res=[]
 	for info in data:
 		info=info.split('#',1)[0].strip()
 		if len(info)==0:
-			if Types is None:
-				continue
-			configItems=[]
-			for dist in Suites:
-				for channel in Components:
-					configItems.append(sourceConfigItem(URIs,dist,channel))
-				if Types=='deb':
-					binaryConfigItems[dist]=configItems
-				elif Types=='deb-src':
-					srcConfigItems[dist]=configItems
-		if info.startswith('Types:'):
-			Types=info.split(':',1)[1].strip()
-		if info.startswith('URIs:'):
-			URIs=info.split(':',1)[1].strip()
-		if info.startswith('Suites:'):
-			Suites=info.split(':',1)[1].strip().split(' ')
-		if info.startswith('Components:'):
-			Components=info.split(':',1)[1].strip().split(' ')
+			continue
+		if info.startswith('['):
+			if name is not None:
+				if not name.endswith('-source'):
+					res.append((name,baseurl))
+			name=info[1:-1]
+			baseurl=None
+		if info.startswith('baseurl'):
+			baseurl=info.split('=',1)[1].strip()
+	if name is not None:
+		if not name.endswith('-source'):
+			res.append((name,baseurl))
+	return res
+def parseRPMsrcSources(data):
+	name=None
+	baseurl=None
+	res=[]
+	for info in data:
+		info=info.split('#',1)[0].strip()
+		if len(info)==0:
+			continue
+		if info.startswith('['):
+			if name is not None:
+				if name.endswith('-source'):
+					res.append((name.split('-')[0],baseurl))
+			name=info[1:-1]
+			baseurl=None
+		if info.startswith('baseurl'):
+			baseurl=info.split('=',1)[1].strip()
+	if name is not None:
+		if name.endswith('-source'):
+			res.append((name.split('-')[0],baseurl))
+	return res
 		
+def getPrimaryFilePath(repoPath)->str:
+	repomdPath=os.path.join(repoPath,"repomd.xml")
+	doc=xml.dom.minidom.parse(repomdPath)
+	root=doc.documentElement
+	nodelist=root.childNodes
+	for subnode in nodelist:
+		if subnode.nodeType==xml.dom.Node.TEXT_NODE:
+			continue
+		if subnode.hasAttribute("type"):
+			if subnode.getAttribute("type")!="primary":
+				continue
+			hash=subnode.getElementsByTagName('checksum')[0].firstChild.nodeValue
+			fileName=hash+"-primary.xml.gz"
+			filePath=os.path.join(repoPath,fileName)
+			if not os.path.isfile(filePath):
+				fileName=hash+"-primary.xml.zst"
+				filePath=os.path.join(repoPath,fileName)
+			return filePath
 
 class SourcesListManager:
 	def __init__(self):
 		self.binaryConfigItems=dict()
-		self.srcConfigItems=dict()
-		sourcesd='/etc/yum.repos.d'
-		for file in os.listdir(sourcesd):
-			filePath=os.path.join(sourcesd, file)
-			if file.endswith('.sources') and os.path.isfile(filePath):
+		self.rpmURL=dict()
+		self.srcURL=dict()
+		db = dnf.dnf.Base()
+		self.arch=db.conf.substitutions['arch']
+		self.basearch=db.conf.substitutions['basearch']
+		self.releasever=db.conf.substitutions['releasever']
+		with open('/etc/yum/vars/contentdir') as f:
+			self.contentdir=f.read().strip()
+		srcSourcesd='/etc/yum.repos.d/'
+		for file in os.listdir(srcSourcesd):
+			filePath=os.path.join(srcSourcesd, file)
+			if os.path.isfile(filePath):
 				with open(filePath) as f:
 					data=f.readlines()
-					parseRPMSources(data,self.binaryConfigItems,self.srcConfigItems)
+					srcs=parseRPMsrcSources(data)
+					for dist,sourceURL in srcs:
+						sourceURL=sourceURL.replace('$contentdir',self.contentdir)
+						sourceURL=sourceURL.replace('$releasever',self.releasever)
+						sourceURL=sourceURL.replace('$arch',self.arch)
+						sourceURL=sourceURL.replace('$basearch',self.basearch)
+						self.srcURL[dist]=sourceURL
+					rpms=parseRPMSources(data)
+					for dist,sourceURL in rpms:
+						sourceURL=sourceURL.replace('$contentdir',self.contentdir)
+						sourceURL=sourceURL.replace('$releasever',self.releasever)
+						sourceURL=sourceURL.replace('$arch',self.arch)
+						sourceURL=sourceURL.replace('$basearch',self.basearch)
+						self.rpmURL[dist]=sourceURL
+					
+		sourcesd='/var/cache/dnf/'
+		for file in os.listdir(sourcesd):
+			distPath=os.path.join(sourcesd, file)
+			if os.path.isdir(distPath):
+				dist=file.split('-')[0]
+				repoPath=os.path.join(distPath,'repodata')
+				primaryFilePath=getPrimaryFilePath(repoPath)
+				self.binaryConfigItems[dist]=[SourceConfigItem(dist,primaryFilePath,self.rpmURL[dist])]
+		
+		
+
 	
-	def setGitLink(self,name,arch,dist):
-		#abandon
-		log.warning("abandon")
+	def getSpecificPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
 		for configItem in self.binaryConfigItems[dist]:
-			res=configItem.getGitLink(name,arch)
-			if res is not None:
-				return res
-		return None
-	def getSpecificPackage(self,name,dist,version,release)->SpecificPackage.SpecificPackage:
-		for configItem in self.binaryConfigItems[dist]:
-			specificPackage=configItem.getSpecificPackage(name,version,release)
+			specificPackage=configItem.getSpecificPackage(name,version,release,arch)
 			if specificPackage is not None:
 				return specificPackage
 		return None
-	def getSpecificSrcPackage(self,name,dist,version,release)->SpecificPackage.SpecificPackage:
-		for configItem in self.binaryConfigItems[dist]:
-			specificPackage=configItem.getSpecificPackage(name,version,release)
-			if specificPackage is not None:
-				return specificPackage
-		return None
+	#def getSpecificSrcPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
+		#for configItem in self.binaryConfigItems[dist]:
+		#	specificPackage=configItem.getSpecificPackage(name,version,release,arch)
+		#	if specificPackage is not None:
+		#		return specificPackage
+		#return None
 	
-	def getBinaryDebPackage(self,packageInfo):
-		pass

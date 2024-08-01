@@ -6,14 +6,15 @@ import nwkTools
 from loguru import logger as log
 from spdx.spdxmain import spdxmain 
 def downloadPackage(selectedPackage):
-	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/aptC/packages',selectedPackage.fileName.rsplit('/',1)[1])
+	print(selectedPackage.repoURL)
+	print(selectedPackage.fileName)
+	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',selectedPackage.fileName.rsplit('/',1)[1])
 	
 def main(command,options,packages):
 	sourcesListManager=SourcesListManager.SourcesListManager()
 	packageProvides=dict()
 	for selectedPackageName in packages:
 		selectedPackage,willInstallPackages=getNewInstall.getNewInstall(selectedPackageName,options,sourcesListManager)
-		continue
 		if selectedPackage is None:
 			continue
 		selectedPackageName=selectedPackage.fullName
