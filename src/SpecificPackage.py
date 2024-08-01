@@ -129,7 +129,31 @@ class SpecificPackage:
 		self.repoURL=repoURL
 		self.fileName=fileName
 		self.getGitLinked=False
-	
+		self.registerProvided=False
+	def addProvidesPointer(self,package):
+		#无需手动调用，addRequirePointer自动处理
+		self.providesPointers.append(package)
+	def addRequirePointer(self,package):
+		self.requirePointers.append(package)
+		package.addProvidesPointer(self)
+	def registerProvides(self,entryMap:EntryMap)->None:
+		if self.registerProvided is True:
+			return
+		self.registerProvided=True
+		for provide in self.providesInfo:
+			entryMap.registerEntry(provide,self)
+	def findRequires(self,entryMap:EntryMap)->None:
+		requirePackageSet=set()
+		requires=dict()
+		for require in self.requiresInfo:
+			if require.name not in requires:
+				requires[require.name]=[]
+			requires[require.name].append(require)
+		for requireName,requireList in requires.items():
+			res=entryMap.queryRequires(requireName,requireList)
+			if res is not None and res not in requirePackageSet:
+				self.addRequirePointer(res)
+				requirePackageSet.add(res)
 	def setGitLink(self):
 		if self.getGitLinked is True:
 			return

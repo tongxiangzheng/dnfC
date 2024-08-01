@@ -36,12 +36,18 @@ def getInstalledPackageInfo(packageName,sourcesListManager:SourcesListManager.So
 	print("error")
 	return None
 
-def getNewInstall(packageName:str,options,sourcesListManager:SourcesListManager.SourcesListManager):
-	cmd="/usr/bin/dnf install --assumeno "
-	for option in options:
-		cmd+=option+' '
-	cmd+=packageName
-	res=[]
+def getDependes(package:SpecificPackage.SpecificPackage,dependesSet:set):
+	if package in dependesSet:
+		return
+	dependesSet.add(package)
+	for p in package.requirePointers:
+		getDependes(p,dependesSet)		
+def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager)->dict:
+	cmd="/usr/bin/dnf --assumeno"
+	argset=set(args)
+	for arg in args:
+		cmd+=' '+arg
+	installPackages=[]
 	#log.info('cmd is '+cmd)
 	#actualPackageName=packageName
 	installInfoSection=False
@@ -55,18 +61,20 @@ def getNewInstall(packageName:str,options,sourcesListManager:SourcesListManager.
 				continue
 			if info=="Transaction Summary" or info=="Enabling module streams:":
 				break
-			res.append(parseInstallInfo(info,sourcesListManager))
+			installPackages.append(parseInstallInfo(info,sourcesListManager))
 		elif info.startswith('Installing:'):
 			installInfoSection=True
-	selectedPackage=None
-	for p in res:
-		if p.fullName==packageName:
-			selectedPackage=p
-	if selectedPackage is None:
-		for p in res:
-			print(p.fullName)
-			for provide in p.providesInfo:
-				if provide.name==packageName:
-					selectedPackage=p
-	#if selectedPackage is None:
-	return selectedPackage,res
+	selectedPackages=[]
+	entryMap=SpecificPackage.EntryMap()
+	for p in installPackages:
+		p.registerProvides(entryMap)
+		if p.fullName in argset:
+			selectedPackages.append(p)
+	for p in installPackages:
+		p.findRequires(entryMap)
+	res=dict()
+	for p in selectedPackages:
+		depends=set()
+		getDependes(p,depends)
+		res[p]=list(depends)
+	return res

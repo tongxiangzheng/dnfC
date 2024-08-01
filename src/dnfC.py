@@ -10,21 +10,18 @@ def downloadPackage(selectedPackage):
 	print(selectedPackage.fileName)
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',selectedPackage.fileName.rsplit('/',1)[1])
 	
-def main(command,options,packages):
+def main(args):
 	sourcesListManager=SourcesListManager.SourcesListManager()
-	packageProvides=dict()
-	for selectedPackageName in packages:
-		selectedPackage,willInstallPackages=getNewInstall.getNewInstall(selectedPackageName,options,sourcesListManager)
-		if selectedPackage is None:
-			continue
+	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
+	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
 		selectedPackageName=selectedPackage.fullName
-		packageProvides[selectedPackageName]=willInstallPackages
 		purls=set()
 		for p in willInstallPackages:
 			purls.add(p.packageInfo.dumpAsPurl())
 		purlList=list(purls)
 		packageFilePath=downloadPackage(selectedPackage)
 		spdxObject=spdxmain(selectedPackageName,packageFilePath,purlList)
+
 	return False
 
 
@@ -38,30 +35,18 @@ def core(args):
 	if setyes is False:
 		cmd+=" -y"
 	return os.system(cmd)
-def parseCommand(args):
-	command=None
-	options=[]
-	packages=[]
-	for arg in args:
-		if arg.startswith('-'):
-			options.append(arg)
-		else:
-			if command is None:
-				command=arg
-			else:
-				packages.append(arg)
-	return command,options,packages
 def user_main(args, exit_code=False):
 	errcode=None
 	for arg in args:
-		if arg=='-s':
+		if arg=='--assumeno':
 			errcode=core(args)
 			break
 	if errcode is None:
-		command,options,packages=parseCommand(args)
-		if command=='install' or command=='reinstall':
-			if main(command,options,packages) is False:
-				errcode=1
+		for arg in args:
+			if arg=='install':
+				if main(args) is False:
+					errcode=1
+				break
 	if errcode is None:
 		errcode=core(args)
 
