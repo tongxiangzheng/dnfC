@@ -3,3 +3,8 @@ pycurl
 certifi
 wget
 pyzstd
+requests
+pyrpm
+cyclonedx-bom
+cyclonedx-python-lib
+spdx-tools

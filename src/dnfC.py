@@ -3,13 +3,27 @@ import os
 import getNewInstall
 import SourcesListManager
 import nwkTools
+import requests
 from loguru import logger as log
+import normalize
+import json
+
+#DIR = os.path.split(os.path.abspath(__file__))[0]
+#sys.path.append(os.path.join(DIR,"spdx"))
 from spdx.spdxmain import spdxmain 
 def downloadPackage(selectedPackage):
 	print(selectedPackage.repoURL)
 	print(selectedPackage.fileName)
-	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',selectedPackage.fileName.rsplit('/',1)[1])
-	
+	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
+
+def queryCVE(spdxObj):
+	url='http://host.docker.internal:8342/querycve/'
+	response = requests.post(url, json=spdxObj)
+	if response.status_code == 200:
+		return response.json()
+	else:
+		log.warning(f'Request failed with status code {response.status_code}')
+		return {}
 def main(args):
 	sourcesListManager=SourcesListManager.SourcesListManager()
 	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
@@ -20,8 +34,11 @@ def main(args):
 			purls.add(p.packageInfo.dumpAsPurl())
 		purlList=list(purls)
 		packageFilePath=downloadPackage(selectedPackage)
-		spdxObject=spdxmain(selectedPackageName,packageFilePath,purlList)
-
+		spdxPath=spdxmain(selectedPackageName,packageFilePath,purlList)
+		with open(spdxPath,"r") as f:
+			spdxObj=json.load(f)
+			cves=queryCVE(spdxObj)
+			print(cves)
 	return False
 
 

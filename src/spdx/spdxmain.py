@@ -1,5 +1,6 @@
 import os
 import sys
+print('now')
 DIR = os.path.split(os.path.abspath(__file__))[0]
 sys.path.append(os.path.join(DIR,"rpm"))
 import BinaryRpmAnalysis
@@ -12,37 +13,39 @@ class ExternalDependency:
 		self.name = name
 		self.version = version
 
-def spdxmain(packageName,packageFilePath,purlList):
+def spdxmain(packageName,packageFilePath,dependsList):
 	print("binary deb file at: "+packageFilePath)
 	print("purl for: "+packageName)
-	for purl in purlList:
-		print(' '+purl)
-	ExternalDependencies=getExternalDependencies(purlList)
-	BinaryRpmAnalysis.binaryRpmScan(packageFilePath,packageFilePath+".spdx.json",ExternalDependencies)
-
+	for depends in dependsList:
+		print(depends)
+	ExternalDependencies=getExternalDependencies(dependsList)
+	resPath=packageFilePath+".spdx.json"
+	BinaryRpmAnalysis.binaryRpmScan(packageFilePath,resPath,ExternalDependencies)
+	return resPath
 #获取外部依赖
-def getExternalDependencies(purlList):
+def getExternalDependencies(dependsList):
 	
 	ExternalDependencies = []
 	
 	print("解析")
-	#都是purl链接
-	for purl in purlList:
-		
-		#获取dependency实例数组
-	   
-		purlComponent =  parse_purl(purl)
-		name =purlComponent['name']
-		version =  purlComponent['version']
+	
+	for depends in dependsList:
+		name = depends['name']
+		version = depends['version']
+		gitLink = ''
+		if 'gitLink' in depends:
+			gitLink = depends['gitLink']
 		Dependency = ExternalDependency(
 			name = name,
-			version= version
+			version= version,
+			gitLink= gitLink
 		)
 		ExternalDependencies.append(Dependency)
-		print("require:",require)
+		#print("require:",require)
 		print("name:",name)
 		print("version",version)
-   
+		print('gitLink',gitLink)
+
 	return ExternalDependencies
 
 def parse_purl(purl):
