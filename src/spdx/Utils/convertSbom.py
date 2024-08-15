@@ -300,6 +300,7 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
         #gitLink = str(exterDependency.gitLink)
         name = exterDependency.name
         version = exterDependency.version
+        purl = exterDependency.purl
         spdx_id_externalDependency = f"SPDXRef-Package-RPM---{name}--{uuid.uuid4()}"
         # 存储所有外部依赖的spdxid
         spdx_id_externalDependencies.append(spdx_id_externalDependency)
@@ -319,8 +320,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
         package_exterDependency.external_references.append(ExternalPackageRef(
             category=ExternalPackageRefCategory.PACKAGE_MANAGER,
             reference_type="purl",
-            # locator=purl
-            locator = f"pkg:rpm/centos/{exterDependency.name}@{exterDependency.version}"
+            locator=purl
+            # locator = f"pkg:rpm/centos/{exterDependency.name}@{exterDependency.version}"
         ))
         document.packages.append(package_exterDependency)
     # 获取source信息

@@ -79,7 +79,7 @@ def getExternalDependencies(scan_path,resultJsonPath):
         print("无外部依赖")
     return Required
 #针对二进制的rpm包做分析
-def binaryRpmScan(scan_path,output_file,PurlList):
+def binaryRpmScan(scan_path,output_file,ExternalDependencies):
     # resultJsonPath = "/home/jiliqiang/RPM/rpm/result.json"
     #处理外部依赖
     # PurlList = getExternalDependencies(scan_path,resultJsonPath)
@@ -98,7 +98,7 @@ def binaryRpmScan(scan_path,output_file,PurlList):
         json_string =json.dumps(syft_json,indent=4, separators=(',', ': '))
         f.write(json_string)
 
-    convertSpdx_binaryRPM(syft_json, project_name, output_file,PurlList)
+    convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
 
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
 # scan_path = "/home/jiliqiang/RPM/rpm/keepass-2.54-2.mga9.noarch.rpm"

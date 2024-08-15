@@ -7,11 +7,13 @@ import BinaryRpmAnalysis
 class ExternalDependency:
 	name:str
 	version:str
-	gitLink:str
-	def __init__(self,name,version):
+	# gitLink:str
+	purl:str
+	def __init__(self,name,version,purl):
 		self.name = name
 		self.version = version
-		#self.gitLink = gitLink
+		self.purl = purl
+		# self.gitLink = gitLink
 
 def spdxmain(packageName,packageFilePath,dependsList):
 	print("binary deb file at: "+packageFilePath)
@@ -32,18 +34,21 @@ def getExternalDependencies(dependsList):
 	for depends in dependsList:
 		name = depends['name']
 		version = depends['version']
+		purl = depends['purl']
 		#gitLink = ''
 		#if 'gitLink' in depends:
 		#	gitLink = str(depends['gitLink'])
 		Dependency = ExternalDependency(
 			name = name,
 			version= version,
+			purl=purl
 			#gitLink= gitLink
 		)
 		ExternalDependencies.append(Dependency)
 		#print("require:",require)
 		print("name:",name)
 		print("version",version)
+		print("purl",purl)
 		#print('gitLink',gitLink)
 
 	return ExternalDependencies
