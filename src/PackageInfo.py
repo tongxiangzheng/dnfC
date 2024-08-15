@@ -30,7 +30,7 @@ class PackageInfo:
 			if self.update is not None:
 				release+='p'+self.update
 		version=self.version+release
-		info={'name':normalize.normalReplace(self.name),'version':normalize.normalReplace(version)}
+		info={'name':normalize.normalReplace(self.name),'version':normalize.normalReplace(version),'purl':self.dumpAsPurl()}
 		if self.gitLink is not None:
 			info['gitLink']=self.gitLink
 		return info
