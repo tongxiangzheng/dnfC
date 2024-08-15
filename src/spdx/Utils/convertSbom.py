@@ -296,6 +296,7 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
     # 处理外部依赖
     spdx_id_externalDependencies = []
     for  purl in purlList:
+        print(purl)
         purlComponent = parse_purl(str(purl))
         name = purlComponent['name']
         version = purlComponent['version']

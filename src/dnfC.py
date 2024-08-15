@@ -1,5 +1,8 @@
 import sys
 import os
+DIR = os.path.split(os.path.abspath(__file__))[0]
+sys.path.append(os.path.join(DIR,"spdx"))
+sys.path.append(os.path.join(DIR,"lib"))
 import getNewInstall
 import SourcesListManager
 import nwkTools
@@ -8,9 +11,8 @@ from loguru import logger as log
 import normalize
 import json
 
-#DIR = os.path.split(os.path.abspath(__file__))[0]
-#sys.path.append(os.path.join(DIR,"spdx"))
-from spdx.spdxmain import spdxmain 
+from spdxmain import spdxmain
+#from spdx.spdxmain import spdxmain
 def downloadPackage(selectedPackage):
 	print(selectedPackage.repoURL)
 	print(selectedPackage.fileName)
@@ -29,12 +31,12 @@ def main(args):
 	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
 		selectedPackageName=selectedPackage.fullName
-		purls=set()
+		depends=dict()
 		for p in willInstallPackages:
-			purls.add(p.packageInfo.dumpAsPurl())
-		purlList=list(purls)
+			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
+		dependsList=list(depends.values())
 		packageFilePath=downloadPackage(selectedPackage)
-		spdxPath=spdxmain(selectedPackageName,packageFilePath,purlList)
+		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 			cves=queryCVE(spdxObj)
@@ -43,7 +45,7 @@ def main(args):
 
 
 def core(args):
-	cmd="/usr/bin/apt"
+	cmd="/usr/bin/dnf"
 	setyes=False
 	for arg in args:
 		cmd+=" "+arg

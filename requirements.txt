@@ -1,12 +1,19 @@
 loguru
-pycurl
+#pycurl
 certifi
 wget
 pyzstd
-requests
+#magic
 pyrpm
+packaging
+rarfile
+spdx-tools
 cyclonedx-bom
 cyclonedx-python-lib
-spdx-tools
 winrar
-numpy
+requests
+#numpy
+
+
+openEuler:
+loguru wget rarfile spdx-tools cyclonedx-bom cyclonedx-python-lib winrar

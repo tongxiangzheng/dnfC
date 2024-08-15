@@ -95,8 +95,10 @@ class SourcesListManager:
 		self.arch=db.conf.substitutions['arch']
 		self.basearch=db.conf.substitutions['basearch']
 		self.releasever=db.conf.substitutions['releasever']
-		with open('/etc/yum/vars/contentdir') as f:
-			self.contentdir=f.read().strip()
+		self.contentdir=""
+		if os.path.isfile('/etc/yum/vars/contentdir'):
+			with open('/etc/yum/vars/contentdir') as f:
+				self.contentdir=f.read().strip()
 		srcSourcesd='/etc/yum.repos.d/'
 		for file in os.listdir(srcSourcesd):
 			filePath=os.path.join(srcSourcesd, file)

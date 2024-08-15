@@ -5,8 +5,7 @@ import json
 import pyrpm
 
 from Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM
-
-syft_path = '/home/jiliqiang/SCA_Tools/Syft/./syft'
+syft_path = '/usr/share/dnfC/spdx/syft/syft'
 #对rpm的二进制包进行预处理，得到相关路径
 def preProcess(rpm_path):
     #将rpm包转换成tgz压缩包

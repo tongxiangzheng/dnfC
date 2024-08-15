@@ -19,10 +19,9 @@ def parseInstallInfo(info:str,sourcesListManager:SourcesListManager.SourcesListM
 def getInstalledPackageInfo(packageName,sourcesListManager:SourcesListManager.SourcesListManager):
 	#abandon
 	log.warning("it's a abandon function")
-	with os.popen("/usr/bin/apt list --installed") as f:
+	with os.popen("/usr/bin/dnf list --installed") as f:
 		data=f.readlines()
 		tmp=packageName+'/'
-		print(tmp)
 		for info in data:
 			if info.startswith(tmp):
 				dist=info.split(',')[0].split('/')[1]
@@ -31,7 +30,7 @@ def getInstalledPackageInfo(packageName,sourcesListManager:SourcesListManager.So
 				release=None
 				if len(version_release)>1:
 					release=version_release[1]
-				print(packageName,dist,version,release)
+				#print(packageName,dist,version,release)
 				return sourcesListManager.getSpecificPackage(packageName,dist,version,release)
 	print("error")
 	return None
@@ -57,6 +56,8 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager)
 	for info in data:
 		if installInfoSection is True:
 			info=info.strip()
+			if len(info)==0:
+				continue
 			if info=="Installing dependencies:":
 				continue
 			if info=="Transaction Summary" or info=="Enabling module streams:":

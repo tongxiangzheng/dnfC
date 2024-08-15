@@ -1,6 +1,5 @@
 import os
 import sys
-print('now')
 DIR = os.path.split(os.path.abspath(__file__))[0]
 sys.path.append(os.path.join(DIR,"rpm"))
 import BinaryRpmAnalysis
@@ -15,7 +14,7 @@ class ExternalDependency:
 
 def spdxmain(packageName,packageFilePath,dependsList):
 	print("binary deb file at: "+packageFilePath)
-	print("purl for: "+packageName)
+	print("depends for: "+packageName)
 	for depends in dependsList:
 		print(depends)
 	ExternalDependencies=getExternalDependencies(dependsList)
@@ -32,19 +31,14 @@ def getExternalDependencies(dependsList):
 	for depends in dependsList:
 		name = depends['name']
 		version = depends['version']
-		gitLink = ''
-		if 'gitLink' in depends:
-			gitLink = depends['gitLink']
 		Dependency = ExternalDependency(
 			name = name,
 			version= version,
-			gitLink= gitLink
 		)
 		ExternalDependencies.append(Dependency)
 		#print("require:",require)
 		print("name:",name)
 		print("version",version)
-		print('gitLink',gitLink)
 
 	return ExternalDependencies
 

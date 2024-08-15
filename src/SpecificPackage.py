@@ -1,3 +1,7 @@
+import sys
+import os
+DIR = os.path.split(os.path.abspath(__file__))[0]
+sys.path.append(os.path.join(DIR,"lib"))
 from collections import defaultdict
 from loguru import logger as log
 from PackageInfo import PackageInfo
