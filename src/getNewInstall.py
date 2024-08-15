@@ -8,12 +8,14 @@ def parseInstallInfo(info:str,sourcesListManager:SourcesListManager.SourcesListM
 	name=info[0]
 	arch=info[1]
 	version_release=info[2].split('-')
-	version=version_release[0]
+	version=version_release[0].split(':')[-1]
 	release=None
 	if len(version_release)>1:
 		release=version_release[1]
 	dist=info[3]
 	specificPackage=sourcesListManager.getSpecificPackage(name,dist,version,release,arch)
+	if specificPackage is None:
+		print(name,dist,version,release,arch)
 	#specificPackage.setGitLink()
 	return specificPackage
 def getInstalledPackageInfo(packageName,sourcesListManager:SourcesListManager.SourcesListManager):
@@ -60,7 +62,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager)
 				continue
 			if info=="Installing dependencies:":
 				continue
-			if info=="Transaction Summary" or info=="Enabling module streams:":
+			if info=="Transaction Summary" or info=="Installing weak dependencies:" or info=="Enabling module streams:":
 				break
 			installPackages.append(parseInstallInfo(info,sourcesListManager))
 		elif info.startswith('Installing:'):

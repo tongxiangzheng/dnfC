@@ -36,11 +36,7 @@ class PackageInfo:
 		return info
 
 	def dumpAsPurl(self):
-		osKind=""
-		if self.osType=='Debian' or self.osType=='Ubuntu':
-			osKind="deb"
-		else:
-			osKind="rpm"
+		osKind="rpm"
 		release=""
 		if self.release is not None:
 			release="-"+self.release

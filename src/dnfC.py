@@ -31,6 +31,7 @@ def main(args):
 		selectedPackageName=selectedPackage.fullName
 		depends=dict()
 		for p in willInstallPackages:
+			print(p.packageInfo.osType)
 			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 		dependsList=list(depends.values())
 		packageFilePath=downloadPackage(selectedPackage)

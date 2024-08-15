@@ -81,7 +81,7 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage:
 	fullName=node.getElementsByTagName('name')[0].firstChild.nodeValue
 	versionNode=node.getElementsByTagName('version')[0]
-	version=versionNode.getAttribute('ver')
+	version=versionNode.getAttribute('ver').split(':')[-1]
 	sourceTag=node.getElementsByTagName('rpm:sourcerpm')
 	if sourceTag[0].firstChild is not None:
 		sourcerpm=sourceTag[0].firstChild.nodeValue
@@ -132,8 +132,11 @@ class RepoFileManager:
 		for package in packages:
 			self.packageMap[package.fullName].append(package)
 	def queryPackage(self,name,version,release,arch):
+		#print("\nquery:")
+		#print(name,version,release,arch)
 		if name in self.packageMap:
 			for specificPackage in self.packageMap[name]:
+				#print(specificPackage.packageInfo.version,specificPackage.packageInfo.release,specificPackage.packageInfo.arch)
 				if specificPackage.packageInfo.version==version and specificPackage.packageInfo.release==release and specificPackage.packageInfo.arch==arch:
 					return specificPackage
 			return None

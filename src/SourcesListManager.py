@@ -5,7 +5,14 @@ import xml.dom.minidom
 from loguru import logger as log
 import dnf
 import json
-
+def getSelfOSName():
+	with open("/etc/os-release") as f:
+		data=f.readlines()
+		for info in data:
+			if info.startswith('ID='):
+				return info.strip()[4:-1]	
+	return ""
+selfOSName=getSelfOSName()
 class SourceConfigItem:
 	def __init__(self,dist,primaryFilePath,repoURL):
 		self.dist=dist
@@ -18,12 +25,12 @@ class SourceConfigItem:
 		log.warning("abandon")
 		repoPath=self.primaryFilePath
 		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,"centos",self.dist,self.repoURL)
+			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,selfOSName,self.dist,self.repoURL)
 		return self.repoFiles[repoPath].getGitLink(name)
 	def getSpecificPackage(self,name,version,release,arch)->SpecificPackage.SpecificPackage:
 		repoPath=self.primaryFilePath
 		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,"centos",self.dist,self.repoURL)
+			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,selfOSName,self.dist,self.repoURL)
 		return self.repoFiles[repoPath].queryPackage(name,version,release,arch)
 
 def parseRPMSources(data):
