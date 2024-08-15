@@ -319,7 +319,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
         package_exterDependency.external_references.append(ExternalPackageRef(
             category=ExternalPackageRefCategory.PACKAGE_MANAGER,
             reference_type="purl",
-            locator=purl
+            # locator=purl
+            locator = f"pkg:rpm/centos/{exterDependency.name}@{exterDependency.version}"
         ))
         document.packages.append(package_exterDependency)
     # 获取source信息
