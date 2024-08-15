@@ -4,8 +4,9 @@ import subprocess
 import json
 import pyrpm
 
-from Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM
+from Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM,convertSpdx_Deb_syft11
 syft_path = '/usr/share/dnfC/spdx/syft/syft'
+syft_path11 = '/usr/share/dnfC/spdx/syft11/syft'
 #对rpm的二进制包进行预处理，得到相关路径
 def preProcess(rpm_path):
     #将rpm包转换成tgz压缩包
@@ -98,6 +99,7 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies):
         json_string =json.dumps(syft_json,indent=4, separators=(',', ': '))
         f.write(json_string)
 
+    # convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
     convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
 
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
