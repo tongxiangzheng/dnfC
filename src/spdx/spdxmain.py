@@ -11,7 +11,7 @@ class ExternalDependency:
 	def __init__(self,name,version):
 		self.name = name
 		self.version = version
-		self.gitLink = gitLink
+		#self.gitLink = gitLink
 
 def spdxmain(packageName,packageFilePath,dependsList):
 	print("binary deb file at: "+packageFilePath)
@@ -32,19 +32,19 @@ def getExternalDependencies(dependsList):
 	for depends in dependsList:
 		name = depends['name']
 		version = depends['version']
-		gitLink = ''
-		if 'gitLink' in depends:
-			gitLink = str(depends['gitLink'])
+		#gitLink = ''
+		#if 'gitLink' in depends:
+		#	gitLink = str(depends['gitLink'])
 		Dependency = ExternalDependency(
 			name = name,
 			version= version,
-			gitLink= gitLink
+			#gitLink= gitLink
 		)
 		ExternalDependencies.append(Dependency)
 		#print("require:",require)
 		print("name:",name)
 		print("version",version)
-		print('gitLink',gitLink)
+		#print('gitLink',gitLink)
 
 	return ExternalDependencies
 

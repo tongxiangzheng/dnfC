@@ -14,8 +14,6 @@ import json
 from spdxmain import spdxmain
 #from spdx.spdxmain import spdxmain
 def downloadPackage(selectedPackage):
-	print(selectedPackage.repoURL)
-	print(selectedPackage.fileName)
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
 
 def queryCVE(spdxObj):

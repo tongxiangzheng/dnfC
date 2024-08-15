@@ -296,8 +296,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
     # 处理外部依赖
     spdx_id_externalDependencies = []
     for  exterDependency in purlList:
-        gitLink = ''
-        gitLink = str(exterDependency.gitLink)
+        #gitLink = ''
+        #gitLink = str(exterDependency.gitLink)
         name = exterDependency.name
         version = exterDependency.version
         spdx_id_externalDependency = f"SPDXRef-Package-RPM---{name}--{uuid.uuid4()}"
@@ -311,7 +311,7 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
             source_info="External Dependency",
             files_analyzed=False,
             description=f"RPM",
-            comment = gitLink,
+            #comment = gitLink,
             copyright_text="Copyright 2024 Jane Doe",
         )
         package_exterDependency.license_concluded = SpdxNoAssertion()
