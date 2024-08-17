@@ -4,7 +4,7 @@ import subprocess
 import json
 import pyrpm
 
-from Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM,convertSpdx_Deb_syft11
+from Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM
 syft_path = '/usr/share/dnfC/spdx/syft/syft'
 syft_path11 = '/usr/share/dnfC/spdx/syft11/syft'
 #对rpm的二进制包进行预处理，得到相关路径

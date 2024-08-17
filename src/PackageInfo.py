@@ -45,7 +45,7 @@ class PackageInfo:
 		if self.gitLink is None:
 			return normalize.normalReplace('pkg:'+osKind+'/'+self.osType+'/'+self.name+'@'+self.version+release+'.'+self.dist)
 		else:
-			return normalize.normalReplace('pkg:'+osKind+'/'+self.osType+'/'+self.name+'@'+self.version+release+'.'+self.dist+"&"+"gitLink="+self.gitLink)
+			return normalize.normalReplace('pkg:'+osKind+'/'+self.osType+'/'+self.name+'@'+self.version+release+'.'+self.dist+"?"+"gitLink="+self.gitLink)
 
 def loadPackageInfo(jsonInfo):
 	osType=jsonInfo['osType']
@@ -62,13 +62,13 @@ def loadPackageInfo(jsonInfo):
 	return PackageInfo(osType,dist,name,version,release,gitLink)
 
 def loadPurl(purlStr):
-	info=purlStr.split(':')[1]
+	info=purlStr.split(':',1)[1]
 	info_extra=info.split('?')
 	info=info_extra[0].split('/')
 	osType=info[1]
 	name=info[2].split('@')[0]
-	version_dist=info[2].split('@')[1]
-	version_release=version_dist.split('-')
+	version_dist=info[2].split('@')[1].rsplit('.',1)
+	version_release=version_dist[0].split('-')
 	version=version_release[0]
 	release=None
 	if len(version_release)>1:

@@ -31,15 +31,19 @@ def main(args):
 		selectedPackageName=selectedPackage.fullName
 		depends=dict()
 		for p in willInstallPackages:
-			print(p.packageInfo.osType)
 			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 		dependsList=list(depends.values())
 		packageFilePath=downloadPackage(selectedPackage)
 		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
-			cves=queryCVE(spdxObj)
-			print(cves)
+		cves=queryCVE(spdxObj)
+		for packageName,cves in cves.items():
+			if len(cves)==0:
+				continue
+			print(packageName+" have cve:")
+			for cve in cves:
+				print(" "+cve)
 	return False
 
 

@@ -2,6 +2,7 @@ import os
 import sys
 DIR = os.path.split(os.path.abspath(__file__))[0]
 sys.path.append(os.path.join(DIR,"rpm"))
+sys.path.append(os.path.join(DIR,"Utils"))
 import BinaryRpmAnalysis
 
 class ExternalDependency:
