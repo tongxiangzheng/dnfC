@@ -30,3 +30,7 @@ docker exec -it dnfc /bin/bash
 ```
 ### 在docker内测试：
 dnf install xxx，此时会执行检查
+
+## 构建
+
+rpmbuild -ba SPECS/test.spec
