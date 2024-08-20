@@ -1,8 +1,6 @@
 import sys
 import os
 DIR = os.path.split(os.path.abspath(__file__))[0]
-sys.path.append(os.path.join(DIR,"spdx"))
-sys.path.append(os.path.join(DIR,"lib"))
 import getNewInstall
 import SourcesListManager
 import nwkTools
@@ -11,7 +9,7 @@ from loguru import logger as log
 import normalize
 import json
 
-from spdxmain import spdxmain
+from spdx.spdxmain import spdxmain
 #from spdx.spdxmain import spdxmain
 def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))

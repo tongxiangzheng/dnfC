@@ -42,7 +42,7 @@ sudo dnf install rpmdevtools
 sudo pip3 install pyinstaller
 rpmdev-setuptree
 cd ..
-cp dnfC dnfC-1.0
+cp dnfC dnfC-1.0 -r
 tar czvf ~/rpmbuild/SOURCES/dnfC-1.0.tar.gz dnfC-1.0
 cd ~/rpmbuild
 rpmbuild -ba SPECS/dnfC.spec
