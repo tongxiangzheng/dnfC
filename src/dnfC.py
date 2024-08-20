@@ -27,6 +27,8 @@ def queryCVE(spdxObj):
 def main(args):
 	sourcesListManager=SourcesListManager.SourcesListManager()
 	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
+	if len(selectedPackages_willInstallPackages)==0:
+		return True
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
 		selectedPackageName=selectedPackage.fullName
 		depends=dict()

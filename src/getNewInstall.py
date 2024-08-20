@@ -54,6 +54,8 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager)
 	stdout, stderr = p.communicate()
 	data=stdout.decode().split('\n')
 	for info in data:
+		if info.startswith('Error: This command has to be run with superuser privileges'):
+			return {}
 		if installInfoSection is True:
 			info=info.strip()
 			if len(info)==0:

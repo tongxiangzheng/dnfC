@@ -31,12 +31,6 @@ def suppress_keyboard_interrupt_message():
 suppress_keyboard_interrupt_message()
 
 
-here = sys.path[0]
-if here != '/usr/bin':
-    # git checkout
-    import os
-    dnf_toplevel = os.path.dirname(here)
-    sys.path[0] = dnf_toplevel
     
 import dnfC
 dnfC.user_main(sys.argv[1:], exit_code=True)

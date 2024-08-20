@@ -15,7 +15,11 @@ yum makecache
 (centos)
 /usr/bin/yum -y install make curl-devel gcc python3-devel openssl-devel python3-numpy python3-pycurl python3-pyyaml python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil 
 (openEuler)
-/usr/bin/yum -y install make curl-devel gcc python3-devel openssl-devel python3-numpy python3-pycurl python3-pyyaml python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil python3-certifi python3-pyrpm python3-packaging python3-requests python3-referencing
+/usr/bin/yum -y install make curl-devel gcc python3-devel openssl-devel python3-numpy python3-pyyaml python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil   python3-packaging  python3-referencing
+
+python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
+
+
 
 cd /code
 #make build
