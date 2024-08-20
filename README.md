@@ -32,5 +32,14 @@ docker exec -it dnfc /bin/bash
 dnf install xxx，此时会执行检查
 
 ## 构建
-
-rpmbuild -ba SPECS/test.spec
+### 构建软件包
+```
+sudo dnf install rpmdevtools
+sudo pip3 install pyinstaller
+rpmdev-setuptree
+cd ..
+cp dnfC dnfC-1.0
+tar czvf ~/rpmbuild/SOURCES/dnfC-1.0.tar.gz dnfC-1.0
+cd ~/rpmbuild
+rpmbuild -ba SPECS/dnfC.spec
+```
