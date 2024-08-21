@@ -39,11 +39,15 @@ dnf install xxx，此时会执行检查
 ### 构建软件包
 ```
 sudo dnf install rpmdevtools
+sudo dnf install python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
 sudo pip3 install pyinstaller
 rpmdev-setuptree
 cd ..
+rm dnfC-1.0 -rf
 cp dnfC dnfC-1.0 -r
 tar czvf ~/rpmbuild/SOURCES/dnfC-1.0.tar.gz dnfC-1.0
+cp dnfC-1.0/SPECS/dnfC.spec ~/rpmbuild/SPECS
 cd ~/rpmbuild
 rpmbuild -ba SPECS/dnfC.spec
 ```
+`~/rpmbuild/RPMS/`文件夹下即为生成的rpm包

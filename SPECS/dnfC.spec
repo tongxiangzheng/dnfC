@@ -22,7 +22,7 @@ rm -rf %{buildroot}
 %setup -q
 
 %build
-pip3 install wget loguru rarfile spdx-tools cyclonedx-bom cyclonedx-python-lib winrar pyzstd
+#pip3 install wget loguru rarfile cyclonedx-bom cyclonedx-python-lib winrar pyzstd
 pyinstaller -F src/dnfc
 
 %install
@@ -31,29 +31,32 @@ mkdir -p %{buildroot}/usr/bin
 cp %{_builddir}/%{name}-%{version}/dist/dnfc %{buildroot}/usr/bin/
 mkdir -p %{buildroot}/share/dnfC/spdx/
 cp -r %{_builddir}/%{name}-%{version}/src/spdx/spdx11 %{buildroot}/share/dnfC/spdx/
+mkdir -p %{buildroot}/share/dnfC/license_expression/
+cp -r %{_builddir}/%{name}-%{version}/src/license_expression/data %{buildroot}/share/dnfC/license_expression/
+mkdir -p %{buildroot}/share/dnfC/cyclonedx/
+cp -r %{_builddir}/%{name}-%{version}/src/cyclonedx %{buildroot}/share/dnfC/
 
+mkdir -p %{buildroot}/etc/
+cp -r %{_builddir}/%{name}-%{version}/etc/aptC %{buildroot}/etc/
 
 %files
 %defattr(-,root,root,-)
 /share/dnfC/*
 /usr/bin/dnfc
-
+/etc/aptC/*
 %post
 
-sed -i "/alias dnf='dnfc'/d" /etc/bashrc
-sed -i "/alias yum='dnfc'/d" /etc/bashrc
-echo "alias dnf='dnfc'" >> /etc/bashrc
-echo "alias yum='dnfc'" >> /etc/bashrc
+sed -i "/set PATH='\/share\/dnfC\/bin;\$PATH'/d" /etc/bashrc
+echo "set PATH='/share/dnfC/bin;\$PATH'" >> /etc/bashrc
 %preun
 
 
 %postun
 
 
-sed -i "/alias dnf='dnfc'/d" /etc/bashrc
-sed -i "/alias yum='dnfc'/d" /etc/bashrc
+sed -i "/set PATH='/share/dnfC/bin;\$PATH'/d" /etc/bashrc
 
 %changelog
-# 描述版本更新历史
+
 
 
