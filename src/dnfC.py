@@ -29,7 +29,7 @@ def main(args):
 		return True
 	aptConfigure=loadConfig.loadConfig()
 	if aptConfigure is None:
-		print('ERROR: cannot load config file in /etc/aptC/config.json, please check config file ')
+		print('ERROR: cannot load config file in /etc/dnfC/config.json, please check config file ')
 		return False
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
 		selectedPackageName=selectedPackage.fullName

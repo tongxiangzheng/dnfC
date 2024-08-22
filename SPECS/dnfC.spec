@@ -37,7 +37,7 @@ mkdir -p %{buildroot}/share/dnfC/cyclonedx/
 cp -r %{_builddir}/%{name}-%{version}/src/cyclonedx %{buildroot}/share/dnfC/
 
 mkdir -p %{buildroot}/etc/
-cp -r %{_builddir}/%{name}-%{version}/etc/aptC %{buildroot}/etc/
+cp -r %{_builddir}/%{name}-%{version}/etc/dnfC %{buildroot}/etc/
 
 %files
 %defattr(-,root,root,-)

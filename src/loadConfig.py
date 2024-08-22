@@ -13,9 +13,9 @@ def checkConfig(configObj)->bool:
 		return False
 	return True
 def loadConfig():
-	if not os.path.isfile('/etc/aptC/config.json'):
+	if not os.path.isfile('/etc/dnfC/config.json'):
 		return None
-	with open('/etc/aptC/config.json',"r") as f:
+	with open('/etc/dnfC/config.json',"r") as f:
 		configObj=json.load(f)
 	if checkConfig(configObj) is False:
 		return None
