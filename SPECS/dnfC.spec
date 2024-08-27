@@ -9,7 +9,7 @@ License:        GPL v2.0
 Source0:        %{name}-%{version}.tar.gz
 
 BuildRequires:  python3 python3-pyinstaller
-BuildRequires:  python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
+#BuildRequires:  python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
 #BuildRequires:  python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing
 #BuildRequires:  python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil python3-certifi
 #BuildRequires:  python3-pyrpm python3-packaging python3-requests python3-referencing

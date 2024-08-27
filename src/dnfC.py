@@ -16,11 +16,17 @@ def downloadPackage(selectedPackage):
 
 def queryCVE(spdxObj,aptConfigure:loadConfig.aptcConfigure):
 	url=aptConfigure.serverURL
-	response = requests.post(url, json=spdxObj)
+	try:
+		response = requests.post(url, json=spdxObj)
+	except requests.exceptions.ConnectionError as e:
+		print("failed to query CVE: Unable to connect: "+url)
+		return {}
+	except Exception as e:
+		print(f'failed to query CVE: {e}')
 	if response.status_code == 200:
 		return response.json()
 	else:
-		log.warning(f'Request failed with status code {response.status_code}')
+		print(f'failed to query CVE: Request failed with status code {response.status_code}')
 		return {}
 def main(args):
 	sourcesListManager=SourcesListManager.SourcesListManager()

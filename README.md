@@ -36,7 +36,7 @@ docker exec -it dnfc /bin/bash
 dnf install xxx，此时会执行检查
 
 ## 构建
-### 构建软件包
+### 在本地环境构建软件包
 ```
 sudo dnf install rpmdevtools
 sudo dnf install python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
@@ -51,3 +51,11 @@ cd ~/rpmbuild
 rpmbuild -ba SPECS/dnfC.spec
 ```
 `~/rpmbuild/RPMS/`文件夹下即为生成的rpm包
+
+### 利用docker构建软件包
+
+```
+docker build -t build_dnfc .
+docker run -v <rpm软件包保存目录>:/mnt/res build_dnfc --rm
+```
+
