@@ -58,7 +58,7 @@ from license_expression._pyahocorasick import Token
 
 #curr_dir = dirname(abspath(__file__))
 #data_dir = join(curr_dir, 'data')
-data_dir = join('/share/dnfC/license_expression', 'data')
+data_dir = join('/usr/share/dnfC/license_expression', 'data')
 vendored_scancode_licensedb_index_location = join(
     data_dir,
     'scancode-licensedb-index.json',
