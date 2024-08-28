@@ -16,7 +16,8 @@
 # Copyright (c) OWASP Foundation. All Rights Reserved.
 
 from abc import ABC, abstractmethod
-from typing import Dict, Literal, Type
+#from typing import Dict, Literal, Type
+from cyclonedx.schema.typing import Dict, Literal, Type
 
 from serializable import ViewType
 
