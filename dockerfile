@@ -9,7 +9,7 @@ RUN dnf makecache
 RUN dnf install -y python3 rpmdevtools python3-pip
 RUN pip3 install --upgrade pip
 RUN pip3 install pyinstaller
-RUN pip3 install pycurl certifi requests pyrpm wget numpy loguru rarfile winrar pyzstd
+RUN pip3 install pycurl certifi requests pyrpm wget numpy loguru rarfile winrar pyzstd expression
 RUN rpmdev-setuptree
 
 COPY * /root/dnfC/

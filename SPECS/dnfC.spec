@@ -36,7 +36,6 @@ mkdir -p %{buildroot}/usr/share/dnfC/license_expression/
 cp -r %{_builddir}/%{name}-%{version}/src/license_expression/data %{buildroot}/usr/share/dnfC/license_expression/
 mkdir -p %{buildroot}/usr/share/dnfC/cyclonedx/
 cp -r %{_builddir}/%{name}-%{version}/src/cyclonedx %{buildroot}/usr/share/dnfC/
-
 mkdir -p %{buildroot}/etc/
 cp -r %{_builddir}/%{name}-%{version}/etc/dnfC %{buildroot}/etc/
 
@@ -47,15 +46,19 @@ cp -r %{_builddir}/%{name}-%{version}/etc/dnfC %{buildroot}/etc/
 /etc/dnfC/*
 %post
 
-sed -i "/set PATH='\/share\/dnfC\/bin;\$PATH'/d" /etc/bashrc
-echo "set PATH='/share/dnfC/bin;\$PATH'" >> /etc/bashrc
+ln -s /usr/sbin/dnfc /usr/sbin/dnf
+ln -s /usr/sbin/dnfc /usr/sbin/yum
+
+#sed -i "/set PATH='\/share\/dnfC\/bin;\$PATH'/d" /etc/bashrc
+#echo "set PATH='/share/dnfC/bin;\$PATH'" >> /etc/bashrc
 %preun
 
 
 %postun
 
-
-sed -i "/set PATH='/share/dnfC/bin;\$PATH'/d" /etc/bashrc
+rm -f /usr/sbin/dnf
+rm -f /usr/sbin/yum
+#sed -i "/set PATH='/share/dnfC/bin;\$PATH'/d" /etc/bashrc
 
 %changelog
 
