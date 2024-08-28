@@ -1,0 +1,51 @@
+
+ARG SYSTEM_NAME='centos'
+ARG VERSION="8"
+
+FROM openeuler/openeuler:24.03-lts as compiler
+
+RUN dnf makecache
+RUN dnf install -y python3 rpmdevtools python3-pip
+RUN dnf install -y python3-numpy python3-pycurl python3-pyyaml python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil
+RUN pip3 install --upgrade pip
+RUN pip3 install pyinstaller
+RUN pip3 install certifi requests pyrpm wget loguru rarfile winrar pyzstd
+RUN pip3 install beartype dataclasses uritools rdflib xmltodict packageurl-python serializable sortedcontainers
+RUN rpmdev-setuptree 
+
+WORKDIR /app
+COPY src /app/
+
+RUN pyinstaller -F dnfc
+#ENTRYPOINT [ "/app/dist/dnfc" ]
+
+
+ARG SYSTEM_NAME
+ARG VERSION
+FROM ${SYSTEM_NAME}:${VERSION} as packager
+
+WORKDIR /root/rpmbuild
+
+RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+RUN dnf clean all
+RUN dnf makecache
+RUN dnf install -y rpmdevtools 
+RUN rpmdev-setuptree 
+
+COPY /SPECS/dnfC.spec /root/rpmbuild/SPECS/dnfC.spec
+COPY etc /root/dnfC-1.0/etc
+COPY src /root/dnfC-1.0/src
+COPY --from=compiler /app/dist/dnfc /root/dnfC-1.0/dist/
+
+WORKDIR /root
+RUN tar czvf ~/rpmbuild/SOURCES/dnfC-1.0.tar.gz dnfC-1.0
+
+WORKDIR /root/rpmbuild
+RUN rpmbuild -ba ~/rpmbuild/SPECS/dnfC.spec
+
+ENTRYPOINT [ "/root/rpmbuild/RPMS/" ]
+
+FROM scratch as rpm_package
+COPY --from=packager /root/rpmbuild/RPMS /RPMS
+COPY --from=packager /root/rpmbuild/SRPMS /SRPMS

@@ -8,7 +8,7 @@ Summary: Check package before install
 License:        GPL v2.0
 Source0:        %{name}-%{version}.tar.gz
 
-BuildRequires:  python3 
+#BuildRequires:  python3 
 #BuildRequires:  python3-pyinstaller 
 #BuildRequires:  python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
 #BuildRequires:  python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing
@@ -24,7 +24,7 @@ rm -rf %{buildroot}
 
 %build
 #pip3 install wget loguru rarfile cyclonedx-bom cyclonedx-python-lib winrar pyzstd
-pyinstaller -F src/dnfc
+#pyinstaller -F src/dnfc
 
 %install
 

@@ -18,11 +18,7 @@
 from abc import ABC, abstractmethod
 import sys
 
-if sys.version_info < (3, 10):
-    from typing_extensions import Literal, Type
-else:
-    from typing import Dict, Literal, Type
-#from cyclonedx.schema.typing import Dict, Literal, Type
+from typing import Dict, Literal, Type
 
 from serializable import ViewType
 

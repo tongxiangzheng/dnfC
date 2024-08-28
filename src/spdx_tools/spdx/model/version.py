@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-#import re
-#from re import Pattern
-from spdx_tools.spdx.model import re
-from spdx_tools.spdx.model.re import Pattern
+import re
+from re import Pattern
+#from spdx_tools.spdx.model import re
+#from spdx_tools.spdx.model.re import Pattern
 
 
 class Version:
