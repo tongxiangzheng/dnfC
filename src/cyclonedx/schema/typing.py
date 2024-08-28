@@ -27,8 +27,16 @@ import functools
 import operator
 import re as stdlib_re  # Avoid confusion with the re we export.
 import sys
-import types
-from types import WrapperDescriptorType, MethodWrapperType, MethodDescriptorType, GenericAlias
+from spdx_tools.spdx.model import re
+from spdx_tools.spdx.model.re import Pattern
+
+
+
+#import types
+#from types import WrapperDescriptorType, MethodWrapperType, MethodDescriptorType, GenericAlias
+import cyclonedx.schema.types as types
+from cyclonedx.schema.types import WrapperDescriptorType, MethodWrapperType, MethodDescriptorType, GenericAlias
+
 
 # Please keep __all__ alphabetized within each category.
 __all__ = [
