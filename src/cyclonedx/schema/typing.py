@@ -27,9 +27,6 @@ import functools
 import operator
 import re as stdlib_re  # Avoid confusion with the re we export.
 import sys
-from spdx_tools.spdx.model import re
-from spdx_tools.spdx.model.re import Pattern
-
 
 
 #import types
@@ -303,7 +300,7 @@ def _flatten_literal_params(parameters):
 _cleanups = []
 
 
-def _tp_cache(func=None, /, *, typed=False):
+def _tp_cache(func=None, *, typed=False):
     """Internal wrapper caching __getitem__ of generic types with a fallback to
     original function for non-hashable arguments.
     """
@@ -351,7 +348,7 @@ class _Final:
 
     __slots__ = ('__weakref__',)
 
-    def __init_subclass__(self, /, *args, **kwds):
+    def __init_subclass__(self, *args, **kwds):
         if '_root' not in kwds:
             raise TypeError("Cannot subclass special typing classes")
 
@@ -2296,7 +2293,7 @@ class NamedTupleMeta(type):
         return nm_tpl
 
 
-def NamedTuple(typename, fields=None, /, **kwargs):
+def NamedTuple(typename, fields=None, **kwargs):
     """Typed version of namedtuple.
 
     Usage in Python versions >= 3.6::
@@ -2395,7 +2392,7 @@ class _TypedDictMeta(type):
     __instancecheck__ = __subclasscheck__
 
 
-def TypedDict(typename, fields=None, /, *, total=True, **kwargs):
+def TypedDict(typename, fields=None, *, total=True, **kwargs):
     """A simple typed namespace. At runtime it is equivalent to a plain dict.
 
     TypedDict creates a dictionary type that expects all of its

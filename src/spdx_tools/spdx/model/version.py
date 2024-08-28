@@ -4,7 +4,7 @@
 
 #import re
 #from re import Pattern
-import spdx_tools.spdx.model.re as re
+from spdx_tools.spdx.model import re
 from spdx_tools.spdx.model.re import Pattern
 
 
