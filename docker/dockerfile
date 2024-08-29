@@ -2,18 +2,12 @@
 ARG SYSTEM_NAME='centos'
 ARG VERSION="8"
 
-FROM openeuler/openeuler:24.03-lts as compiler
-
-RUN dnf makecache
-RUN dnf install -y python3 rpmdevtools python3-pip
-RUN dnf install -y python3-numpy python3-pycurl python3-pyyaml python3-semantic_version python3-chardet python3-jsonschema python3-lxml python3-pyparsing python3-attrs python3-jsonpointer python3-idna python3-six python3-dateutil
-RUN pip3 install --upgrade pip
-RUN pip3 install pyinstaller
-RUN pip3 install certifi requests pyrpm wget loguru rarfile winrar pyzstd
-RUN pip3 install beartype dataclasses uritools rdflib xmltodict packageurl-python serializable sortedcontainers
-RUN rpmdev-setuptree 
+FROM python:3 as compiler
 
 WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY src /app/
 
 RUN pyinstaller -F dnfc
