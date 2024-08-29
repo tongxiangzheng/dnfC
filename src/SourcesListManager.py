@@ -3,7 +3,8 @@ import RepoFileManager
 import SpecificPackage
 import xml.dom.minidom
 from loguru import logger as log
-import dnf
+from subprocess import PIPE, Popen
+#import dnf
 import json
 def getSelfOSName():
 	with open("/etc/os-release") as f:
@@ -93,15 +94,25 @@ def getPrimaryFilePath(repoPath)->str:
 				filePath=os.path.join(repoPath,fileName)
 			return filePath
 
+def queryDnfContext():
+	cmd="python3 -c 'import dnf, pprint; db = dnf.dnf.Base(); pprint.pprint(db.conf.substitutions, width=1)'"
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = p.communicate()
+	data=json.load(stdout.decode)
+	return data
 class SourcesListManager:
 	def __init__(self):
 		self.binaryConfigItems=dict()
 		self.rpmURL=dict()
 		self.srcURL=dict()
-		db = dnf.dnf.Base()
-		self.arch=db.conf.substitutions['arch']
-		self.basearch=db.conf.substitutions['basearch']
-		self.releasever=db.conf.substitutions['releasever']
+		#db = dnf.dnf.Base()
+		#self.arch=db.conf.substitutions['arch']
+		#self.basearch=db.conf.substitutions['basearch']
+		#self.releasever=db.conf.substitutions['releasever']
+		conf=queryDnfContext()
+		self.arch=conf['arch']
+		self.basearch=conf['basearch']
+		self.releasever=conf['releasever']
 		self.contentdir=""
 		if os.path.isfile('/etc/yum/vars/contentdir'):
 			with open('/etc/yum/vars/contentdir') as f:
