@@ -37,6 +37,7 @@ class SourceConfigItem:
 def parseRPMSources(data):
 	name=None
 	baseurl=None
+	enabled='1'
 	res=[]
 	for info in data:
 		info=info.split('#',1)[0].strip()
@@ -45,18 +46,24 @@ def parseRPMSources(data):
 		if info.startswith('['):
 			if name is not None:
 				if not name.endswith('-source'):
-					res.append((name,baseurl))
+					if enabled=='1':
+						res.append((name,baseurl))
 			name=info[1:-1]
 			baseurl=None
-		if info.startswith('baseurl'):
+			enabled='1'
+		elif info.startswith('baseurl'):
 			baseurl=info.split('=',1)[1].strip()
+		elif info.startswith('enabled'):
+			enabled=info.split('=',1)[1].strip()
 	if name is not None:
 		if not name.endswith('-source'):
-			res.append((name,baseurl))
+			if enabled=='1':
+				res.append((name,baseurl))
 	return res
 def parseRPMsrcSources(data):
 	name=None
 	baseurl=None
+	enabled='1'
 	res=[]
 	for info in data:
 		info=info.split('#',1)[0].strip()
@@ -65,14 +72,19 @@ def parseRPMsrcSources(data):
 		if info.startswith('['):
 			if name is not None:
 				if name.endswith('-source'):
-					res.append((name.split('-')[0],baseurl))
+					if enabled=='1':
+						res.append((name.split('-')[0],baseurl))
 			name=info[1:-1]
 			baseurl=None
+			enabled='1'
 		if info.startswith('baseurl'):
 			baseurl=info.split('=',1)[1].strip()
+		if info.startswith('enabled'):
+			enabled=info.split('=',1)[1].strip()
 	if name is not None:
 		if name.endswith('-source'):
-			res.append((name.split('-')[0],baseurl))
+			if enabled=='1':
+				res.append((name.split('-')[0],baseurl))
 	return res
 		
 def getPrimaryFilePath(repoPath)->str:
@@ -127,13 +139,13 @@ class SourcesListManager:
 			if os.path.isfile(filePath):
 				with open(filePath) as f:
 					data=f.readlines()
-					srcs=parseRPMsrcSources(data)
-					for dist,sourceURL in srcs:
-						sourceURL=sourceURL.replace('$contentdir',self.contentdir)
-						sourceURL=sourceURL.replace('$releasever',self.releasever)
-						sourceURL=sourceURL.replace('$arch',self.arch)
-						sourceURL=sourceURL.replace('$basearch',self.basearch)
-						self.srcURL[dist]=sourceURL
+					#srcs=parseRPMsrcSources(data)
+					#for dist,sourceURL in srcs:
+					#	sourceURL=sourceURL.replace('$contentdir',self.contentdir)
+					#	sourceURL=sourceURL.replace('$releasever',self.releasever)
+					#	sourceURL=sourceURL.replace('$arch',self.arch)
+					#	sourceURL=sourceURL.replace('$basearch',self.basearch)
+					#	self.srcURL[dist]=sourceURL
 					rpms=parseRPMSources(data)
 					for dist,sourceURL in rpms:
 						sourceURL=sourceURL.replace('$contentdir',self.contentdir)
