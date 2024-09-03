@@ -47,7 +47,7 @@ def main(args):
 		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
-		cves=queryCVE(spdxObj,aptConfigure)
+		cves=queryCVE(spdxObj,dnfConfigure)
 		for packageName,cves in cves.items():
 			if len(cves)==0:
 				continue

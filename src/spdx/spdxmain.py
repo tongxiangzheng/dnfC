@@ -1,7 +1,7 @@
 import os
 import sys
 DIR = os.path.split(os.path.abspath(__file__))[0]
-import spdx.rpm.BinaryRpmAnalysis
+from .rpm import BinaryRpmAnalysis
 
 class ExternalDependency:
 	name:str

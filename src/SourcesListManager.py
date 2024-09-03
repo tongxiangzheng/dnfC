@@ -77,6 +77,8 @@ def parseRPMsrcSources(data):
 		
 def getPrimaryFilePath(repoPath)->str:
 	repomdPath=os.path.join(repoPath,"repomd.xml")
+	if not os.path.isfile(repomdPath):
+		return None
 	doc=xml.dom.minidom.parse(repomdPath)
 	root=doc.documentElement
 	nodelist=root.childNodes
@@ -95,10 +97,12 @@ def getPrimaryFilePath(repoPath)->str:
 			return filePath
 
 def queryDnfContext():
-	cmd="python3 -c 'import dnf, pprint; db = dnf.dnf.Base(); pprint.pprint(db.conf.substitutions, width=1)'"
+	cmd="python3 -c 'import dnf, json; db = dnf.dnf.Base(); print(db.conf.substitutions)'"
 	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
-	data=json.load(stdout.decode)
+	raw_data=stdout.decode()
+	raw_data=raw_data.replace("\'","\"")
+	data=json.loads(raw_data)
 	return data
 class SourcesListManager:
 	def __init__(self):
@@ -145,7 +149,8 @@ class SourcesListManager:
 				dist=file.split('-')[0]
 				repoPath=os.path.join(distPath,'repodata')
 				primaryFilePath=getPrimaryFilePath(repoPath)
-				self.binaryConfigItems[dist]=[SourceConfigItem(dist,primaryFilePath,self.rpmURL[dist])]
+				if primaryFilePath is not None:
+					self.binaryConfigItems[dist]=[SourceConfigItem(dist,primaryFilePath,self.rpmURL[dist])]
 		
 		
 

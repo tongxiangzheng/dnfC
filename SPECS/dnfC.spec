@@ -32,6 +32,7 @@ mkdir -p %{buildroot}/usr/sbin
 cp %{_builddir}/%{name}-%{version}/dist/dnfc %{buildroot}/usr/sbin/
 mkdir -p %{buildroot}/usr/share/dnfC/spdx/
 cp -r %{_builddir}/%{name}-%{version}/src/spdx/spdx11 %{buildroot}/usr/share/dnfC/spdx/
+cp -r %{_builddir}/%{name}-%{version}/src/spdx/syft %{buildroot}/usr/share/dnfC/spdx/
 mkdir -p %{buildroot}/usr/share/dnfC/license_expression/
 cp -r %{_builddir}/%{name}-%{version}/src/license_expression/data %{buildroot}/usr/share/dnfC/license_expression/
 mkdir -p %{buildroot}/usr/share/dnfC/cyclonedx/

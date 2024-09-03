@@ -58,7 +58,6 @@ docker build --output=<二进制文件保存目录> --target=binary -f docker/do
 
 
 ```
-docker build --output=<软件包保存目录> --build-arg SYSTEM="centos" --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile .
 docker build --output=<软件包保存目录> --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile_centos .
 
 ```
