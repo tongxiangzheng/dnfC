@@ -14,11 +14,6 @@ RUN make install -j 8
 RUN ln -s /usr/local/lib/libpython3.10.so.1.0 /usr/lib64/libpython3.10.so.1.0
 RUN pip3 install --upgrade pip
 
-RUN wget https://github.com/rpm-software-management/dnf/archive/refs/tags/4.21.1.tar.gz
-RUN tar xzf 4.21.1.tar.gz
-RUN mkdir dnf-4.21.1/build
-WORKDIR /pyprepare/dnf-4.21.1/build
-RUN cmake -DPYTHON_DESIRED="3" ..
 
 WORKDIR /app
 COPY requirements.txt ./

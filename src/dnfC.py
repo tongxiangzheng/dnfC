@@ -14,8 +14,8 @@ from spdx.spdxmain import spdxmain
 def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
 
-def queryCVE(spdxObj,aptConfigure:loadConfig.aptcConfigure):
-	url=aptConfigure.serverURL
+def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
+	url=dnfConfigure.serverURL
 	try:
 		response = requests.post(url, json=spdxObj)
 	except requests.exceptions.ConnectionError as e:
@@ -33,8 +33,8 @@ def main(args):
 	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
 	if len(selectedPackages_willInstallPackages)==0:
 		return True
-	aptConfigure=loadConfig.loadConfig()
-	if aptConfigure is None:
+	dnfConfigure=loadConfig.loadConfig()
+	if dnfConfigure is None:
 		print('ERROR: cannot load config file in /etc/dnfC/config.json, please check config file ')
 		return False
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
@@ -57,16 +57,17 @@ def main(args):
 	return False
 
 
-def core(args):
+def core(args,setyes=False):
 	cmd="/usr/bin/dnf"
 	setyes=False
 	for arg in args:
 		cmd+=" "+arg
 		if arg=='-y':
-			setyes=True
-	if setyes is False:
+			setyes=False
+	if setyes is True:
 		cmd+=" -y"
 	return os.system(cmd)
+
 def user_main(args, exit_code=False):
 	errcode=None
 	for arg in args:
@@ -78,6 +79,8 @@ def user_main(args, exit_code=False):
 			if arg=='install':
 				if main(args) is False:
 					errcode=1
+				else:
+					errcode=core(args,setyes=True)
 				break
 	if errcode is None:
 		errcode=core(args)

@@ -1,6 +1,6 @@
 import json
 import os
-class aptcConfigure:
+class dnfcConfigure:
 	def __init__(self,configObj):
 		self.serverURL=configObj['server']['url']
 
@@ -19,4 +19,4 @@ def loadConfig():
 		configObj=json.load(f)
 	if checkConfig(configObj) is False:
 		return None
-	return aptcConfigure(configObj)
+	return dnfcConfigure(configObj)

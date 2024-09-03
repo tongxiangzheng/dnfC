@@ -27,7 +27,7 @@ from .. import SchemaVersion
 
 #__DIR = dirname(__file__)
 
-__DIR = '/share/dnfC/cyclonedx/schema/_res'
+__DIR = '/usr/share/dnfC/cyclonedx/schema/_res'
 
 BOM_XML: Dict[SchemaVersion, Optional[str]] = {
     SchemaVersion.V1_6: join(__DIR, 'bom-1.6.SNAPSHOT.xsd'),
