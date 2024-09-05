@@ -114,7 +114,10 @@ def queryDnfContext():
 	stdout, stderr = p.communicate()
 	raw_data=stdout.decode()
 	raw_data=raw_data.replace("\'","\"")
-	data=json.loads(raw_data)
+	try:
+		data=json.loads(raw_data)
+	except Exception:
+		return None
 	return data
 class SourcesListManager:
 	def __init__(self):
@@ -126,9 +129,14 @@ class SourcesListManager:
 		#self.basearch=db.conf.substitutions['basearch']
 		#self.releasever=db.conf.substitutions['releasever']
 		conf=queryDnfContext()
-		self.arch=conf['arch']
-		self.basearch=conf['basearch']
-		self.releasever=conf['releasever']
+		if conf is not None:
+			self.arch=conf['arch']
+			self.basearch=conf['basearch']
+			self.releasever=conf['releasever']
+		else:
+			self.arch="$arch"
+			self.basearch="$basearch"
+			self.releasever="$releasever"
 		self.contentdir=""
 		if os.path.isfile('/etc/yum/vars/contentdir'):
 			with open('/etc/yum/vars/contentdir') as f:
