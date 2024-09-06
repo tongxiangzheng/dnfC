@@ -5,27 +5,40 @@ sys.path.append(os.path.join(DIR,"lib"))
 from collections import defaultdict
 from loguru import logger as log
 from PackageInfo import PackageInfo
-import DscParser
 def compareVersion(version1,version2):
 	# -1: version1<version2 0:version1==version2 1:version1>version2
 	v1=version1.split('.')
 	v2=version2.split('.')
 	for i in range(min(len(v1),len(v2))):
-		if v1[i]<v2[i]:
+		if int(v1[i])<int(v2[i]):
 			return -1
-		if v1[i]>v2[i]:
-			return -1
-	if len(v1)!=len(v2):
-		log.warning("version cannot compare, v1: "+version1+" v2: "+version2)
+		if int(v1[i])>int(v2[i]):
+			return 1
+	#if len(v1)!=len(v2):
+	#	log.warning("version cannot compare, v1: "+version1+" v2: "+version2)
 	return 0
+def firstNumber(rawstr)->str:
+	res=""
+	for c in rawstr:
+		if c.isdigit() is True or c == '.':
+			res+=c
+		else:
+			break
+	if res.endswith('.'):
+		res=res[:-1]
+	return res
 class PackageEntry:
 	def __init__(self,name:str,flags:str,version:str,release:str):
 		self.name=name
 		self.flags=flags
+		if version is not None:
+			version=firstNumber(version.split(':')[-1])
 		self.version=version
+		if release is not None:
+			release=firstNumber(release)
 		self.release=release
 	def checkMatch(self,dist):
-		if self.flags is None:
+		if self.flags is None or dist.flags is None:
 			return True
 		if dist.version is None:
 			log.warning(self.name+" have problem: dist version is None")
@@ -158,9 +171,3 @@ class SpecificPackage:
 			if res is not None and res not in requirePackageSet:
 				self.addRequirePointer(res)
 				requirePackageSet.add(res)
-	def setGitLink(self):
-		if self.getGitLinked is True:
-			return
-		gitLink=DscParser.getGitLink(self)
-		self.getGitLinked=True
-		self.packageInfo.gitLink=gitLink

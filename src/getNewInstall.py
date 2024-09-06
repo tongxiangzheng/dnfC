@@ -14,7 +14,6 @@ def parseInstallInfo(info:str,sourcesListManager:SourcesListManager.SourcesListM
 		release=version_release[1]
 	dist=info[3]
 	specificPackage=sourcesListManager.getSpecificPackage(name,dist,version,release,arch)
-	#specificPackage.setGitLink()
 	return specificPackage
 def getInstalledPackageInfo(packageName,sourcesListManager:SourcesListManager.SourcesListManager):
 	#abandon
