@@ -28,9 +28,19 @@ def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
 	else:
 		print(f'failed to query CVE: Request failed with status code {response.status_code}')
 		return {}
-def main(args):
+def main(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedxPath=None,dumpFileOnly=False):
+	assumeNo=False
+	for option in args:
+		if option=='--assumeno':
+			assumeNo=True
+		if option.startswith('--genspdx'):
+			genSpdx=True
+			saveSpdxPath=option.split('=',1)[1]
+		if option.startswith('--gencyclonedx'):
+			genCyclonedx=True
+			saveCyclonedxPath=option.split('=',1)[1]
 	sourcesListManager=SourcesListManager.SourcesListManager()
-	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager)
+	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager,dumpFileOnly)
 	if len(selectedPackages_willInstallPackages)==0:
 		return True
 	dnfConfigure=loadConfig.loadConfig()
@@ -48,13 +58,22 @@ def main(args):
 			project_packages[p.packageInfo.name].append(p.fullName)
 		dependsList=list(depends.values())
 		packageFilePath=downloadPackage(selectedPackage)
-		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList)
+		if dumpFileOnly is True:
+			if genSpdx is True:
+				spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+			if genCyclonedx is True:
+				cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
+			continue
+		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+		if genCyclonedx is True:
+			cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 		cves=queryCVE(spdxObj,dnfConfigure)
 		for projectName,cves in cves.items():
 			if len(cves)==0:
 				continue
+			print("package: ",end='')
 			first=True
 			for packageName in project_packages[projectName]:
 				if first is True:
@@ -65,6 +84,15 @@ def main(args):
 			print(" have cve:")
 			for cve in cves:
 				print(" "+cve)
+	if assumeNo is True or dumpFileOnly is True:
+		return False
+	
+	print('Are you true to continue? (y/n)')
+	userinput=input()
+	if userinput=='y':
+		return True
+	else:
+		print('abort')
 	return False
 
 
@@ -82,16 +110,16 @@ def core(args,setyes=False):
 def user_main(args, exit_code=False):
 	errcode=None
 	for arg in args:
-		if arg=='--assumeno':
+		if arg=='--assumeno' or arg=='-y':
 			errcode=core(args)
 			break
 	if errcode is None:
 		for arg in args:
 			if arg=='install':
-				if main(args) is False:
-					errcode=1
-				else:
+				if main(args) is True:
 					errcode=core(args,setyes=True)
+				else:
+					errcode=0
 				break
 	if errcode is None:
 		errcode=core(args)

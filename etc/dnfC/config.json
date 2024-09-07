@@ -1,5 +1,5 @@
 {
 	"server":{
-		"url":"http://172.28.185.117:8342/querycve/"
+		"url":"http://192.168.5.61:8342/querycve/"
 	}
 }

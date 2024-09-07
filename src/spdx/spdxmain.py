@@ -14,7 +14,7 @@ class ExternalDependency:
 		self.purl = purl
 		# self.gitLink = gitLink
 
-def spdxmain(packageName,packageFilePath,dependsList):
+def spdxmain(packageName,packageFilePath,dependsList,sbomType='spdx',saveSbomPath='/tmp/aptC'):
 	print("binary deb file at: "+packageFilePath)
 	print("depends for: "+packageName)
 	for depends in dependsList:
