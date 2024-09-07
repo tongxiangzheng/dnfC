@@ -40,18 +40,29 @@ def main(args):
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
 		selectedPackageName=selectedPackage.fullName
 		depends=dict()
+		project_packages=dict()
 		for p in willInstallPackages:
 			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
+			if p.packageInfo.name not in project_packages:
+				project_packages[p.packageInfo.name]=[]
+			project_packages[p.packageInfo.name].append(p.fullName)
 		dependsList=list(depends.values())
 		packageFilePath=downloadPackage(selectedPackage)
 		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 		cves=queryCVE(spdxObj,dnfConfigure)
-		for packageName,cves in cves.items():
+		for projectName,cves in cves.items():
 			if len(cves)==0:
 				continue
-			print(packageName+" have cve:")
+			first=True
+			for packageName in project_packages[projectName]:
+				if first is True:
+					first=False
+				else:
+					print(", ",end='')
+				print(packageName,end='')
+			print(" have cve:")
 			for cve in cves:
 				print(" "+cve)
 	return False

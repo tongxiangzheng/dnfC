@@ -8,6 +8,8 @@ Summary: Check package before install
 License:        GPL v2.0
 Source0:        %{name}-%{version}.tar.gz
 
+Requires:  python3
+
 #BuildRequires:  python3 
 #BuildRequires:  python3-pyinstaller 
 #BuildRequires:  python3-pycurl python3-certifi python3-requests python3-pyrpm python3-numpy
