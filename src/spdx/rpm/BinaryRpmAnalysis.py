@@ -4,7 +4,7 @@ import subprocess
 import json
 import pyrpm
 
-from spdx.Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM
+from spdx.Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM,convertCyclonedx
 syft_path = '/usr/share/dnfC/spdx/syft/syft'
 syft_path11 = '/usr/share/dnfC/spdx/syft11/syft'
 #对rpm的二进制包进行预处理，得到相关路径
@@ -80,7 +80,7 @@ def getExternalDependencies(scan_path,resultJsonPath):
         print("无外部依赖")
     return Required
 #针对二进制的rpm包做分析
-def binaryRpmScan(scan_path,output_file,ExternalDependencies):
+def binaryRpmScan(scan_path,output_file,ExternalDependencies,sbomType):
     # resultJsonPath = "/home/jiliqiang/RPM/rpm/result.json"
     #处理外部依赖
     # PurlList = getExternalDependencies(scan_path,resultJsonPath)
@@ -91,17 +91,18 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies):
     #处理内部依赖
     project_name = dir_Path
     # 生成syft普通json
-    command_syft = f"{syft_path} scan  {dir_Path} -o json"
+    command_syft = f"{syft_path11} scan  {dir_Path} -o json"
     syft_output = subprocess.check_output(command_syft, shell=True)
     syft_json = json.loads(syft_output.decode())
     tempath = scan_path + '-syft.json'
     with open(tempath, "w") as f:
         json_string =json.dumps(syft_json,indent=4, separators=(',', ': '))
         f.write(json_string)
-
+    if sbomType == 'spdx':
     # convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
-    convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
-
+        convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
+    if sbomType == 'cyclonedx':
+        convertCyclonedx(syft_json,project_name,output_file,ExterDependencies)
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
 # scan_path = "/home/jiliqiang/RPM/rpm/keepass-2.54-2.mga9.noarch.rpm"
 # output_file = "/home/jiliqiang/RPM/rpm/SBOM/keepass-2.54-2.mga9.noarch.rpm.spdx.json"

@@ -331,7 +331,7 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
     name = source['name'].replace("/", "-")
     spdx = ''
     if type == 'directory':
-        projectStr = project_name.replace("/", "-").replace("_", "-")
+        projectStr = project_name.replace("/", "-").replace("_", "-").replace("@", "").replace("+", "-")
         spdx = f"SPDXRef-DocumentRoot-Directory-{projectStr}"
     elif type == 'file':
         spdx = f"SPDXRef-DocumentRoot-File-{name}"
