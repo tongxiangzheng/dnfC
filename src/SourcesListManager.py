@@ -33,7 +33,11 @@ class SourceConfigItem:
 		if repoPath not in self.repoFiles:
 			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,selfOSName,self.dist,self.repoURL)
 		return self.repoFiles[repoPath].queryPackage(name,version,release,arch)
-
+	def getAllPackages(self):
+		repoPath=self.primaryFilePath
+		if repoPath not in self.repoFiles:
+			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,selfOSName,self.dist,self.repoURL)
+		return self.repoFiles[repoPath].getAllPackages()
 def parseRPMSources(data):
 	name=None
 	baseurl=None
@@ -181,6 +185,11 @@ class SourcesListManager:
 			if specificPackage is not None:
 				return specificPackage
 		return None
+	def getAllPackages(self,dist):
+		res=[]
+		for configItem in self.binaryConfigItems[dist]:
+			res.extend(configItem.getAllPackages())
+		return res
 	#def getSpecificSrcPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
 		#for configItem in self.binaryConfigItems[dist]:
 		#	specificPackage=configItem.getSpecificPackage(name,version,release,arch)
