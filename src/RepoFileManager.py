@@ -142,7 +142,7 @@ class RepoFileManager:
 			return None
 	def getAllPackages(self):
 		res=[]
-		for packageName,packageList in self.packageMap:
+		for packageList in self.packageMap.values():
 			res.extend(packageList)
 		return res
 		
