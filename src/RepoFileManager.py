@@ -140,5 +140,10 @@ class RepoFileManager:
 				if specificPackage.packageInfo.version==version and specificPackage.packageInfo.release==release and specificPackage.packageInfo.arch==arch:
 					return specificPackage
 			return None
+	def getAllPackages(self):
+		res=[]
+		for packageList in self.packageMap.values():
+			res.extend(packageList)
+		return res
 		
 	
