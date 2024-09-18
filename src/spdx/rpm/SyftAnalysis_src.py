@@ -9,9 +9,9 @@ import numpy as np
 import requests
 import json
 
-from Utils.convertSbom import convertSpdx
-from Utils.extract import decompress
-from Utils.java.mavenAnalysis import AnalysisVariabele
+from spdx.Utils.convertSbom import convertSpdx
+from spdx.Utils.extract import decompress
+from spdx.Utils.java.mavenAnalysis import AnalysisVariabele
 
 # 定义路径
 base_path = '/home/jiliqiang/SCA_Code/RPM_package_src'

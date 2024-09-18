@@ -4,58 +4,58 @@ import gzip
 import pyzstd
 from SpecificPackage import *
 def parseRPMItemInfo(data):
-    res=[]
-    for item in data:
-        item=item.strip()
-        name=None
-        flags=None
-        version=None
-        release=None
-        parse=item.split(' = ')
-        if len(parse)>1:
-            name=parse[0]
-            flags="EQ"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
-        parse=item.split(' <= ')
-        if len(parse)>1:
-            name=parse[0]
-            flags="LE"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
-        parse=item.split(' < ')
-        if len(parse)>1:
-            name=parse[0]
-            flags="LT"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
-        parse=item.split(' >= ')
-        if len(parse)>1:
-            name=parse[0]
-            flags="GE"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
-        parse=item.split(' > ')
-        if len(parse)>1:
-            name=parse[0]
-            flags="GT"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
-        if name is None:
-            name=item
-        #log.debug(" "+name)
-        res.append(PackageEntry(name,flags,version,release))
-    return res
+	res=[]
+	for item in data:
+		item=item.strip()
+		name=None
+		flags=None
+		version=None
+		release=None
+		parse=item.split(' = ')
+		if len(parse)>1:
+			name=parse[0]
+			flags="EQ"
+			p2=parse[1].split('-')
+			version=p2[0]
+			if len(p2)<1:
+				release=p2[1].split('.')[0]
+		parse=item.split(' <= ')
+		if len(parse)>1:
+			name=parse[0]
+			flags="LE"
+			p2=parse[1].split('-')
+			version=p2[0]
+			if len(p2)<1:
+				release=p2[1].split('.')[0]
+		parse=item.split(' < ')
+		if len(parse)>1:
+			name=parse[0]
+			flags="LT"
+			p2=parse[1].split('-')
+			version=p2[0]
+			if len(p2)<1:
+				release=p2[1].split('.')[0]
+		parse=item.split(' >= ')
+		if len(parse)>1:
+			name=parse[0]
+			flags="GE"
+			p2=parse[1].split('-')
+			version=p2[0]
+			if len(p2)<1:
+				release=p2[1].split('.')[0]
+		parse=item.split(' > ')
+		if len(parse)>1:
+			name=parse[0]
+			flags="GT"
+			p2=parse[1].split('-')
+			version=p2[0]
+			if len(p2)<1:
+				release=p2[1].split('.')[0]
+		if name is None:
+			name=item
+		#log.debug(" "+name)
+		res.append(PackageEntry(name,flags,version,release))
+	return res
 def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 	#fullName just for debug info, can be empty string
 	nodelist=node.childNodes

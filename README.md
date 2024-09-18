@@ -56,9 +56,11 @@ rpmbuild -ba SPECS/dnfC.spec
 仅构建二进制文件：
 docker build --output=<二进制文件保存目录> --target=binary -f docker/dockerfile_pycompile .
 
-
+构建rpm软件包
 ```
 docker build --output=<软件包保存目录> --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile_centos .
-
 ```
-
+例如
+```
+docker build --output=. --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile_centos .
+```

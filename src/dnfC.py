@@ -10,6 +10,7 @@ import normalize
 import json
 import loadConfig
 from spdx.spdxmain import spdxmain
+import scanSrc
 #from spdx.spdxmain import spdxmain
 def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
@@ -120,6 +121,9 @@ def user_main(args, exit_code=False):
 					errcode=core(args,setyes=True)
 				else:
 					errcode=0
+				break
+			if arg=='scansrc':
+				errcode=scanSrc(args[1])
 				break
 	if errcode is None:
 		errcode=core(args)
