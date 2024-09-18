@@ -2,42 +2,32 @@ import os
 import RepoFileManager
 import SpecificPackage
 import xml.dom.minidom
+import osInfo
 from loguru import logger as log
-from subprocess import PIPE, Popen
 #import dnf
 import json
-def getSelfOSName():
-	with open("/etc/os-release") as f:
-		data=f.readlines()
-		for info in data:
-			if info.startswith('ID='):
-				return info.strip()[4:-1]	
-	return ""
-selfOSName=getSelfOSName()
+
 class SourceConfigItem:
 	def __init__(self,dist,primaryFilePath,repoURL):
 		self.dist=dist
 		self.primaryFilePath=primaryFilePath
-		self.repoFiles=dict()
+		self.repoFileManager=None
 		self.repoURL=repoURL
 		#self.machineArch=machineArch
+	def getRepoFileManager(self):
+		if self.repoFileManager is None:
+			self.repoFileManager=RepoFileManager.RepoFileManager(self.primaryFilePath,osInfo.OSName,self.dist,self.repoURL)
 	def getGitLink(self,name,arch):
 		#abandon
 		log.warning("abandon")
-		repoPath=self.primaryFilePath
-		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(self.url,repoPath,selfOSName,self.dist,self.repoURL)
-		return self.repoFiles[repoPath].getGitLink(name)
+		self.getRepoFileManager()
+		return self.repoFileManager.getGitLink(name)
 	def getSpecificPackage(self,name,version,release,arch)->SpecificPackage.SpecificPackage:
-		repoPath=self.primaryFilePath
-		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,selfOSName,self.dist,self.repoURL)
-		return self.repoFiles[repoPath].queryPackage(name,version,release,arch)
+		self.getRepoFileManager()
+		return self.repoFileManager.queryPackage(name,version,release,arch)
 	def getAllPackages(self):
-		repoPath=self.primaryFilePath
-		if repoPath not in self.repoFiles:
-			self.repoFiles[repoPath]=RepoFileManager.RepoFileManager(repoPath,selfOSName,self.dist,self.repoURL)
-		return self.repoFiles[repoPath].getAllPackages()
+		self.getRepoFileManager()
+		return self.repoFileManager.getAllPackages()
 def parseRPMSources(data):
 	name=None
 	baseurl=None
@@ -132,7 +122,7 @@ class SourcesListManager:
 		#self.arch=db.conf.substitutions['arch']
 		#self.basearch=db.conf.substitutions['basearch']
 		#self.releasever=db.conf.substitutions['releasever']
-		conf=queryDnfContext()
+		conf=osInfo.conf
 		if conf is not None:
 			self.arch=conf['arch']
 			self.basearch=conf['basearch']
@@ -180,15 +170,18 @@ class SourcesListManager:
 
 	
 	def getSpecificPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
+		if dist not in self.binaryConfigItems:
+			return None
 		for configItem in self.binaryConfigItems[dist]:
 			specificPackage=configItem.getSpecificPackage(name,version,release,arch)
 			if specificPackage is not None:
 				return specificPackage
 		return None
-	def getAllPackages(self,dist):
+	def getAllPackages(self):
 		res=[]
-		for configItem in self.binaryConfigItems[dist]:
-			res.extend(configItem.getAllPackages())
+		for binaryConfigItem in self.binaryConfigItems.values():
+			for configItem in binaryConfigItem:
+				res.extend(configItem.getAllPackages())
 		return res
 	#def getSpecificSrcPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
 		#for configItem in self.binaryConfigItems[dist]:

@@ -123,7 +123,7 @@ def user_main(args, exit_code=False):
 					errcode=0
 				break
 			if arg=='scansrc':
-				errcode=scanSrc(args[1])
+				errcode=scanSrc.scansrc(args[1])
 				break
 	if errcode is None:
 		errcode=core(args)
@@ -132,5 +132,5 @@ def user_main(args, exit_code=False):
 		sys.exit(errcode)
 	return errcode
 
-if __name__ == '__main__':
-	user_main(sys.argv[1:],True)
+#if __name__ == '__main__':
+#	user_main(sys.argv[1:],True)

@@ -145,9 +145,9 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path):
 
 
 
-src_rpm_path = '/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src.rpm'
-output_file = '/home/jiliqiang/RPM/src/glassfish_syft.spdx.json'
-scan_rpm_src(src_rpm_path,output_file)
+#src_rpm_path = '/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src.rpm'
+#output_file = '/home/jiliqiang/RPM/src/glassfish_syft.spdx.json'
+#scan_rpm_src(src_rpm_path,output_file)
 
 # dir_Path='/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src'
 # findExterDependency(dir_Path)

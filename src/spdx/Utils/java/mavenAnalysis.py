@@ -48,4 +48,4 @@ def read_jar_metadata(jar_file_path):
 
 # 使用示例
 # read_jar_metadata('/home/jiliqiang/SCA_Evalutation/efda/java/jars/original-jars/lib/org/spamframework/spam-web/version.RELEASE/spam-web-version.RELEASE.jar')
-read_jar_metadata('/home/jiliqiang/Deb/src/rstudio/src/gwt/lib/gwt/gwt-rstudio/requestfactory-client+src.jar')
+#read_jar_metadata('/home/jiliqiang/Deb/src/rstudio/src/gwt/lib/gwt/gwt-rstudio/requestfactory-client+src.jar')

@@ -8,7 +8,7 @@ Summary: Check package before install
 License:        GPL v2.0
 Source0:        %{name}-%{version}.tar.gz
 
-Requires:  python3,python3-magic
+Requires:  python3
 
 #BuildRequires:  python3 
 #BuildRequires:  python3-pyinstaller 
