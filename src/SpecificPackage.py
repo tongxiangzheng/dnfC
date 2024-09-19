@@ -10,9 +10,17 @@ def compareVersion(version1,version2):
 	v1=version1.split('.')
 	v2=version2.split('.')
 	for i in range(min(len(v1),len(v2))):
-		if int(v1[i])<int(v2[i]):
+		if v1[i].isdigit():
+			v1i=int(v1[i])
+		else:
+			v1i=v1[i]
+		if v2[i].isdigit():
+			v2i=int(v2[i])
+		else:
+			v2i=v2[i]
+		if v1i<v2i:
 			return -1
-		if int(v1[i])>int(v2[i]):
+		if v1i>v2i:
 			return 1
 	#if len(v1)!=len(v2):
 	#	log.warning("version cannot compare, v1: "+version1+" v2: "+version2)
@@ -35,7 +43,9 @@ class PackageEntry:
 			version=firstNumber(version.split(':')[-1])
 		self.version=version
 		if release is not None:
-			release=firstNumber(release)
+			releasenew=firstNumber(release)
+			if releasenew!=0:
+				release=releasenew
 		self.release=release
 	def checkMatch(self,dist):
 		if self.flags is None or dist.flags is None:
@@ -78,7 +88,24 @@ class PackageEntry:
 				return True
 			else:
 				return False
+	def dump(self):
+		res=self.name
+		if self.flags=='EQ':
+			res+=' = '
+		elif self.flags=='LE':
+			res+=' <= '
+		elif self.flags=='LT':
+			res+=' < '
+		elif self.flags=='GE':
+			res+=' >= '
+		elif self.flags=='GT':
+			res+=' > '
 		
+		if self.version is not None:
+			res+=self.version
+		if self.release is not None:
+			res+='-'+self.release
+		return res
 def defaultNoneList():
 	return []
 class EntryMap:
@@ -92,8 +119,11 @@ class EntryMap:
 		res=[]
 		for info in infoList:
 			package=info[0]
+			#print(package.fullName)
 			provideEntry=info[1]
+			#print('-'+provideEntry.dump())
 			for entry in entrys:
+				#print(' '+entry.dump())
 				if entry.checkMatch(provideEntry):
 					res.append(package)
 		#print(" "+entry.name)
@@ -115,9 +145,9 @@ class EntryMap:
 				res2=res[0]
 				for r in res[1:]:
 					if(name!=r.packageInfo.name):
-						log.warning("failed to decide require package for: "+entry.name)
-						for r1 in res:
-							log.info(" one of provider is: "+r1.fullName)
+						# log.warning("failed to decide require package for: "+entry.name)
+						# for r1 in res:
+						# 	log.info(" one of provider is: "+r1.fullName)
 						return res2
 					if compareVersion(versionEntry.version,r.getSelfEntry().version)==-1:
 						versionEntry=r.getSelfEntry()
@@ -125,6 +155,14 @@ class EntryMap:
 				return res2
 		#TODO:check res[0][1] is match
 		return res[0]
+def getDependes(package,dependesSet:set):
+	if package in dependesSet:
+		return
+	dependesSet.add(package)
+	for p in package.requirePointers:
+		getDependes(p,dependesSet)	
+
+		
 def defaultCVEList():
 	return 0
 class Counter:
@@ -136,6 +174,8 @@ class Counter:
 class SpecificPackage:
 	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,status="uninstalled",repoURL=None,fileName=""):
 		self.packageInfo=packageInfo
+		if packageInfo.version=="":
+			print(fullName,packageInfo.name)
 		self.fullName=fullName
 		self.providesInfo=provides
 		self.requiresInfo=requires
@@ -159,6 +199,8 @@ class SpecificPackage:
 		self.registerProvided=True
 		for provide in self.providesInfo:
 			entryMap.registerEntry(provide,self)
+	def getSelfEntry(self):
+		return PackageEntry(self.fullName,"EQ",self.packageInfo.version,self.packageInfo.release)
 	def findRequires(self,entryMap:EntryMap)->None:
 		requirePackageSet=set()
 		requires=dict()

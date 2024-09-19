@@ -14,7 +14,7 @@ install:
 	mkdir -p $(DESTDIR)/usr/share/dnfC
 	cp -r src/* $(DESTDIR)/usr/share/dnfC/
 	mkdir -p $(DESTDIR)/etc/
-	cp -r src/* $(DESTDIR)/etc/
+	cp -r etc/* $(DESTDIR)/etc/
 
 uninstall:
 	-rm -f $(DESTDIR)/usr/sbin/dnfc

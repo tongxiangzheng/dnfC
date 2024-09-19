@@ -1,19 +1,5 @@
-import magic
+
 import packaging.version
-#检测压缩包格式
-def detect_file_type(filename):
-    """
-    检测文件的类型
-
-    Args:
-        filename: 文件名
-
-    Returns:
-        文件类型
-    """
-
-    m = magic.Magic(mime=True)
-    return m.from_file(filename)
 
 #查看支持的所有压缩格式
 
@@ -104,27 +90,27 @@ def decompress(source_file, target_dir):
 #
 # decompress(source_file, target_dir)
 
-import os
+# import os
 
-import libarchive.read
-import libarchive.extract
+# import libarchive.read
+# import libarchive.extract
 
-def extract_rpm(rpm_file, extract_dir):
-    # with libarchive.read.file_reader(rpm_file) as  archive:
-    #     for entry in archive:
-    #         target_path = os.path.join(extract_dir, entry.path)
-    #         libarchive.extract.mentions(entry,target_path)
-    #         print(f"Extracting: {target_path}")
-    with libarchive.file_reader(rpm_file) as archive:
-        for entry in archive:
-            # libarchive.extract.extract_entries(entry,extract_dir)
+# def extract_rpm(rpm_file, extract_dir):
+#     # with libarchive.read.file_reader(rpm_file) as  archive:
+#     #     for entry in archive:
+#     #         target_path = os.path.join(extract_dir, entry.path)
+#     #         libarchive.extract.mentions(entry,target_path)
+#     #         print(f"Extracting: {target_path}")
+#     with libarchive.file_reader(rpm_file) as archive:
+#         for entry in archive:
+#             # libarchive.extract.extract_entries(entry,extract_dir)
 
-            extract_path = os.path.join(extract_dir, entry.path)
-            os.makedirs(os.path.dirname(extract_path), exist_ok=True)
-            with libarchive.file_writer(extract_path,'zip') as ext:
-                for block in entry.get_blocks():
-                    ext.write(block)
-            print(f"Extracting: {extract_path}")
+#             extract_path = os.path.join(extract_dir, entry.path)
+#             os.makedirs(os.path.dirname(extract_path), exist_ok=True)
+#             with libarchive.file_writer(extract_path,'zip') as ext:
+#                 for block in entry.get_blocks():
+#                     ext.write(block)
+#             print(f"Extracting: {extract_path}")
 
 
 # extract_rpm("/home/jiliqiang/RPM/rpm/kaffeine-2.0.18-10.fc39.x86_64.rpm", "/home/jiliqiang/RPM/rpm/affeine-2.0.18-10.fc39.x86_64")

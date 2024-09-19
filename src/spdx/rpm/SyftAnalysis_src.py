@@ -9,9 +9,9 @@ import numpy as np
 import requests
 import json
 
-from Utils.convertSbom import convertSpdx
-from Utils.extract import decompress
-from Utils.java.mavenAnalysis import AnalysisVariabele
+from spdx.Utils.convertSbom import convertSpdx,convertCyclonedx
+from spdx.Utils.extract import decompress
+from spdx.Utils.java.mavenAnalysis import AnalysisVariabele
 
 # 定义路径
 base_path = '/home/jiliqiang/SCA_Code/RPM_package_src'
@@ -63,13 +63,13 @@ def preProcess(src_rpm_path):
 def scan_rpm_src(src_rpm_path,output_file,ExternalDependencies,sbomType):
     dir_Path, key_dir_path = preProcess(src_rpm_path)
 
-    scan_rpm_src_path(key_dir_path,output_file,dir_Path)
+    scan_rpm_src_path(key_dir_path,output_file,dir_Path,ExternalDependencies,sbomType)
 
 
 #scan_path 是扫描项目的路径,输入的是rpm的src目录的文件夹,也就是key_dir_path
 #output_file 指定要保存的文件路径
 #这里输入的是deb源码包解压后的文件夹，输出的是sbom
-def scan_rpm_src_path(scan_path,output_file,dir_Path):
+def scan_rpm_src_path(scan_path,output_file,dir_Path,ExternalDependencies,sbomType):
     #处理内部依赖
     # project_name= remove_file_extension(scan_path)
     project_name = scan_path
@@ -126,8 +126,11 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path):
                                 matrix[index_variable, index_path] = 1
     # 处理外部依赖
     # ExterDependencies = findExterDependency(scan_path)
-    ExterDependencies = findExterDependency(dir_Path)
-    convertSpdx(syft_json, project_name, output_file, ExterDependencies)
+    # ExterDependencies = findExterDependency(dir_Path)
+    if sbomType == 'spdx':
+        convertSpdx(syft_json, project_name, output_file, ExternalDependencies)
+    if sbomType == 'cyclonedx':
+        convertCyclonedx(syft_json, project_name, output_file, ExternalDependencies)
     # 生成cyclonedx的json
     # command_sbom = f"{syft_path} scan  {scan_path} -o cyclonedx-json"
     # cyclonedx_output = subprocess.check_output(command_sbom, shell=True)
@@ -145,9 +148,9 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path):
 
 
 
-src_rpm_path = '/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src.rpm'
-output_file = '/home/jiliqiang/RPM/src/glassfish_syft.spdx.json'
-scan_rpm_src(src_rpm_path,output_file)
+#src_rpm_path = '/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src.rpm'
+#output_file = '/home/jiliqiang/RPM/src/glassfish_syft.spdx.json'
+#scan_rpm_src(src_rpm_path,output_file)
 
 # dir_Path='/home/jiliqiang/RPM/src/glassfish-jaxb-2.3.1-150200.5.5.9.src'
 # findExterDependency(dir_Path)
