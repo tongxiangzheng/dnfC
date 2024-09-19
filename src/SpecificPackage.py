@@ -119,11 +119,11 @@ class EntryMap:
 		res=[]
 		for info in infoList:
 			package=info[0]
-			print(package.fullName)
+			#print(package.fullName)
 			provideEntry=info[1]
-			print('-'+provideEntry.dump())
+			#print('-'+provideEntry.dump())
 			for entry in entrys:
-				print(' '+entry.dump())
+				#print(' '+entry.dump())
 				if entry.checkMatch(provideEntry):
 					res.append(package)
 		#print(" "+entry.name)
@@ -155,6 +155,14 @@ class EntryMap:
 				return res2
 		#TODO:check res[0][1] is match
 		return res[0]
+def getDependes(package,dependesSet:set):
+	if package in dependesSet:
+		return
+	dependesSet.add(package)
+	for p in package.requirePointers:
+		getDependes(p,dependesSet)	
+
+		
 def defaultCVEList():
 	return 0
 class Counter:

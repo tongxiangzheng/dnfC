@@ -146,6 +146,8 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 			version=version.rsplit('-',1)[0]
 			dist=version_dist[1]
 			channel=readStr(f)[1:]
+			if channel=="system":
+				continue
 			#print(osType,dist,name,version,release)
 			package=sourcesListManager.getSpecificPackage(fullName,channel,version,release,arch)
 			if package is not None:
