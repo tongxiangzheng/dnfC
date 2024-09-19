@@ -6,10 +6,6 @@ def normalReplace(s:str)->str:
 	s=s.replace('_','-underline-')
 	s=s.replace('@','-at-')
 	s=s.replace('/','-slash-')
-<<<<<<< HEAD
-=======
-	# s=s.replace('\','backslash')
->>>>>>> b3a5e7ecb30df5015c5a280c5a32269ef344bec7
 	return s
 
 def reNormalReplace(s:str)->str:

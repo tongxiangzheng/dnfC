@@ -43,9 +43,9 @@ class PackageInfo:
 			if self.update is not None:
 				release+='p'+self.update
 		if self.gitLink is None:
-			return normalize.normalReplace('pkg:'+osKind+'/'+self.osType+'/'+self.name+'@'+self.version+release+'.'+self.dist)
+			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)
 		else:
-			return normalize.normalReplace('pkg:'+osKind+'/'+self.osType+'/'+self.name+'@'+self.version+release+'.'+self.dist+"?"+"gitLink="+self.gitLink)
+			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)+"?"+"gitLink="+normalize.normalReplace(self.gitLink)
 
 def loadPackageInfo(jsonInfo):
 	osType=jsonInfo['osType']
