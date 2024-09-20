@@ -2,7 +2,7 @@
 ARG SYSTEM_NAME='centos'
 ARG VERSION="8"
 
-FROM ${SYSTEM_NAME}:${VERSION} as compiler
+FROM ${SYSTEM_NAME}:${VERSION} AS compiler
 WORKDIR /pyprepare
 RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
@@ -31,7 +31,7 @@ RUN pyinstaller -F dnfc
 
 ARG SYSTEM_NAME
 ARG VERSION
-FROM ${SYSTEM_NAME}:${VERSION} as packager
+FROM ${SYSTEM_NAME}:${VERSION} AS packager
 
 WORKDIR /root/rpmbuild
 
@@ -39,7 +39,8 @@ RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 RUN dnf clean all
 RUN dnf makecache
-RUN dnf install -y rpmdevtools rpmdev-setuptree 
+RUN dnf install -y rpmdevtools
+RUN rpmdev-setuptree
 
 COPY /SPECS/dnfC.spec /root/rpmbuild/SPECS/dnfC.spec
 COPY etc /root/dnfC-1.0/etc
@@ -54,6 +55,6 @@ RUN rpmbuild -ba ~/rpmbuild/SPECS/dnfC.spec
 
 ENTRYPOINT [ "/root/rpmbuild/RPMS/" ]
 
-FROM scratch as rpm_package
+FROM scratch AS rpm_package
 COPY --from=packager /root/rpmbuild/RPMS /RPMS
 COPY --from=packager /root/rpmbuild/SRPMS /SRPMS
