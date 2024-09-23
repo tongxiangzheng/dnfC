@@ -159,18 +159,23 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 				res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,None,"installed"))
 	return res
 
-def scansrc(srcFile,option):
+def scansrc(args):
+	srcFile=None
 	genSpdx=False
 	spdxPath='.'
-	genCyclone=False
+	genCyclonedx=False
 	cyclonePath='.'
-	for option in options:
+	for option in args:
 		if option.startswith('--genspdx='):
 			genSpdx=True
 			spdxPath=option.split('=',1)[1]
-		if option.startswith('--gencyclonedx='):
-			genCyclone=True
+		elif option.startswith('--gencyclonedx='):
+			genCyclonedx=True
 			cyclonePath=option.split('=',1)[1]
+		elif option=="scansrc":
+			continue
+		else:
+			srcFile=option
 	if spdxPath is False and cyclonePath is False:
 		spdxPath=True
 	srcPath=os.path.join("/tmp/dnfC/",normalize.normalReplace(os.path.abspath(srcFile)))
