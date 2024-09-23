@@ -159,7 +159,20 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 				res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,None,"installed"))
 	return res
 
-def scansrc(srcFile):
+def scansrc(srcFile,option):
+	genSpdx=False
+	spdxPath='.'
+	genCyclone=False
+	cyclonePath='.'
+	for option in options:
+		if option.startswith('--genspdx='):
+			genSpdx=True
+			spdxPath=option.split('=',1)[1]
+		if option.startswith('--gencyclonedx='):
+			genCyclone=True
+			cyclonePath=option.split('=',1)[1]
+	if spdxPath is False and cyclonePath is False:
+		spdxPath=True
 	srcPath=os.path.join("/tmp/dnfC/",normalize.normalReplace(os.path.abspath(srcFile)))
 	shutil.copyfile(srcFile,srcPath)
 	specInfo=getSpecFile(srcPath)
@@ -187,6 +200,10 @@ def scansrc(srcFile):
 		depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 	dependsList=list(depends.values())
 	print(dependsList)
-	srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'spdx',".")
+	if genSpdx is True:
+		srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'spdx',spdxPath)
+	if genCyclonedx is True:
+		srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'cyclonedx',cyclonedxPath)
+
 	print("generate SPOM for "+srcpackage.fullName)
 	return 0
