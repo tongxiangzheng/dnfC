@@ -2,14 +2,29 @@
 ARG SYSTEM_NAME='centos'
 ARG VERSION="8"
 
-FROM python:3 as compiler
+FROM ${SYSTEM_NAME}:${VERSION} as compiler
+WORKDIR /pyprepare
+RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
+RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
+RUN yum clean all
+RUN yum makecache
+RUN yum install -y gcc openssl-devel bzip2-devel libffi-devel zlib-devel make wget cmake
+
+RUN curl https://www.python.org/ftp/python/3.10.14/Python-3.10.14.tgz --output Python-3.10.14.tgz
+RUN tar xzf Python-3.10.14.tgz
+WORKDIR /pyprepare/Python-3.10.14
+RUN ./configure --enable-shared
+RUN make install -j 8
+RUN ln -s /usr/local/lib/libpython3.10.so.1.0 /usr/lib64/libpython3.10.so.1.0
+RUN pip3 install --upgrade pip
+
 
 WORKDIR /app
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
+
 
 COPY src /app/
-
 RUN pyinstaller -F dnfc
 #ENTRYPOINT [ "/app/dist/dnfc" ]
 
@@ -24,8 +39,7 @@ RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 RUN dnf clean all
 RUN dnf makecache
-RUN dnf install -y rpmdevtools 
-RUN rpmdev-setuptree 
+RUN dnf install -y rpmdevtools rpmdev-setuptree 
 
 COPY /SPECS/dnfC.spec /root/rpmbuild/SPECS/dnfC.spec
 COPY etc /root/dnfC-1.0/etc
@@ -41,5 +55,4 @@ RUN rpmbuild -ba ~/rpmbuild/SPECS/dnfC.spec
 ENTRYPOINT [ "/root/rpmbuild/RPMS/" ]
 
 FROM scratch as rpm_package
-COPY --from=packager /root/rpmbuild/RPMS /RPMS
-COPY --from=packager /root/rpmbuild/SRPMS /SRPMS
+COPY --from=packager /root/rpmbuild/RPMS /
