@@ -210,5 +210,5 @@ def scansrc(args):
 	if genCyclonedx is True:
 		srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'cyclonedx',cyclonedxPath)
 
-	print("generate SPOM for "+srcpackage.fullName)
+	print("generate SBOM for "+srcpackage.fullName)
 	return 0

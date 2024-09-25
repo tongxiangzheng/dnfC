@@ -187,6 +187,7 @@ class SpecificPackage:
 		self.fileName=fileName
 		self.getGitLinked=False
 		self.registerProvided=False
+		self.haveFoundRequires=False
 	def addProvidesPointer(self,package):
 		#无需手动调用，addRequirePointer自动处理
 		self.providesPointers.append(package)
@@ -202,6 +203,9 @@ class SpecificPackage:
 	def getSelfEntry(self):
 		return PackageEntry(self.fullName,"EQ",self.packageInfo.version,self.packageInfo.release)
 	def findRequires(self,entryMap:EntryMap)->None:
+		if self.haveFoundRequires is True:
+			return
+		self.haveFoundRequires=True
 		requirePackageSet=set()
 		requires=dict()
 		for require in self.requiresInfo:
