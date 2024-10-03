@@ -187,6 +187,6 @@ def scansrc(srcFile):
 		depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 	dependsList=list(depends.values())
 	print(dependsList)
-	srcmain(normalize.normalReplace(package.fullName),srcPath,dependsList,'spdx',".")
-	print("generate SPOM for "+package.fullName)
+	srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'spdx',".")
+	print("generate SPOM for "+srcpackage.fullName)
 	return 0

@@ -194,6 +194,18 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             )
             package.external_references.append(externPackageRef)
         purl = artifact['purl']
+        if purl == "":
+            externPackageRef = ExternalPackageRef(
+            category=ExternalPackageRefCategory.PACKAGE_MANAGER,
+            reference_type="purl",
+            locator=f'pkg:unkonwn/unkonwn/unkonwn@unkonwn'
+        )
+        else:
+            externPackageRef = ExternalPackageRef(
+            category=ExternalPackageRefCategory.PACKAGE_MANAGER,
+            reference_type="purl",
+            locator=purl
+            )
         externPackageRef=ExternalPackageRef(
             category=ExternalPackageRefCategory.PACKAGE_MANAGER,
             reference_type="purl",
