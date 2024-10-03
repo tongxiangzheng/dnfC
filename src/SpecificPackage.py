@@ -5,47 +5,71 @@ sys.path.append(os.path.join(DIR,"lib"))
 from collections import defaultdict
 from loguru import logger as log
 from PackageInfo import PackageInfo
+def splitDigitAndChar(rawstr)->list:
+	res=[]
+	if len(rawstr)==0:
+		return res
+	r=rawstr[0]
+	if r.isdigit() is True:
+		t="digit"
+	else:
+		t='char'
+	for i in range(1,len(rawstr)):
+		c=rawstr[i]
+		if c.isdigit() is True:
+			t2="digit"
+		else:
+			t2='char'
+		if t!=t2:
+			if t=='digit':
+				res.append(int(r))
+			else:
+				res.append(r)
+			r=""
+			t=t2
+		r+=c
+	if t=='digit':
+		res.append(int(r))
+	else:
+		res.append(r)
+	return res
 def compareVersion(version1,version2):
 	# -1: version1<version2 0:version1==version2 1:version1>version2
 	v1=version1.split('.')
 	v2=version2.split('.')
 	for i in range(min(len(v1),len(v2))):
-		if v1[i].isdigit():
-			v1i=int(v1[i])
-		else:
-			v1i=v1[i]
-		if v2[i].isdigit():
-			v2i=int(v2[i])
-		else:
-			v2i=v2[i]
-		if v1i<v2i:
+		v1l=splitDigitAndChar(v1[i])
+		v2l=splitDigitAndChar(v2[i])
+		for j in range(min(len(v1l),len(v2l))):
+			v1i=v1l[j]
+			v2i=v2l[j]
+			if type(v1i)!=type(v2i):
+				return 0
+			if v1i<v2i:
+				return -1
+			if v1i>v2i:
+				return 1
+		if len(v1l)<len(v2l):
 			return -1
-		if v1i>v2i:
+		if len(v1l)>len(v2l):
 			return 1
-	#if len(v1)!=len(v2):
-	#	log.warning("version cannot compare, v1: "+version1+" v2: "+version2)
+	if len(v1)<len(v2):
+		return -1
+	if len(v1)>len(v2):
+		return 1
 	return 0
-def firstNumber(rawstr)->str:
-	res=""
-	for c in rawstr:
-		if c.isdigit() is True or c == '.':
-			res+=c
-		else:
-			break
-	if res.endswith('.'):
-		res=res[:-1]
-	return res
+def compareEntry(a,b):
+	r=compareVersion(a.version,b.version)
+	if r!=0:
+		return r
+	if a.release is None or b.release is None:
+		return 0
+	return compareVersion(a.release,b.release)
 class PackageEntry:
 	def __init__(self,name:str,flags:str,version:str,release:str):
 		self.name=name
 		self.flags=flags
-		if version is not None:
-			version=firstNumber(version.split(':')[-1])
 		self.version=version
-		if release is not None:
-			releasenew=firstNumber(release)
-			if releasenew!=0:
-				release=releasenew
 		self.release=release
 	def checkMatch(self,dist):
 		if self.flags is None or dist.flags is None:
@@ -69,22 +93,22 @@ class PackageEntry:
 			else:
 				return False
 		elif flags=='LE':
-			if compareVersion(dist.version,self.version)==-1 or (compareVersion(dist.version,self.version)==0 and (self.release is None or dist.release is None or dist.release<self.release)):
+			if compareEntry(dist,self)<=0:
 				return True
 			else:
 				return False
 		elif flags=='LT':
-			if compareVersion(dist.version,self.version)==-1 or (compareVersion(dist.version,self.version)==0 and (self.release is None or dist.release is None or dist.release<=self.release)):
+			if compareEntry(dist,self)==-1:
 				return True
 			else:
 				return False
 		elif flags=='GE':
-			if compareVersion(dist.version,self.version)==1 or (compareVersion(dist.version,self.version)==0 and (self.release is None or dist.release is None or dist.release>self.release)):
+			if compareEntry(dist,self)>=0:
 				return True
 			else:
 				return False
 		elif flags=='GT':
-			if compareVersion(dist.version,self.version)==1 or (compareVersion(dist.version,self.version)==0 and (self.release is None or dist.release is None or dist.release>=self.release)):
+			if compareEntry(dist,self)==1:
 				return True
 			else:
 				return False
@@ -113,55 +137,71 @@ class EntryMap:
 		self.provideEntryPackages=defaultdict(defaultNoneList)
 	def registerEntry(self,entry:PackageEntry,package):
 		self.provideEntryPackages[entry.name].append((package,entry))
-	def queryRequires(self,requireName:str,entrys:list):
+	def queryRequires(self,packageName,requireName:str,entrys:list,mustInstalled:bool):
 		# requireName==entrys[i].name
 		infoList=self.provideEntryPackages[requireName]
 		res=[]
 		for info in infoList:
 			package=info[0]
-			#print(package.fullName)
+			if mustInstalled is True:
+				if package.status=='uninstalled':
+					continue
 			provideEntry=info[1]
-			#print('-'+provideEntry.dump())
+			isMatch=True
 			for entry in entrys:
-				#print(' '+entry.dump())
 				if entry.checkMatch(provideEntry):
-					res.append(package)
+					continue
+				else:
+					isMatch=False
+			if isMatch is True:
+				res.append(package)
 		#print(" "+entry.name)
 		#for r in res:
 			#print("  "+r[0].fullName)
-		if len(res)!=1:
-			if len(res)==0:
-				#log.warning("no package provide the require file: "+entry.name)
-				return None
+		if len(res)<=1 or mustInstalled is True:
+			return res
+		name_versionEntry=dict()
+		for r in res:
+			name=r.fullName
+			if name not in name_versionEntry:
+				name_versionEntry[name]=(r.getSelfEntry(),r)
 			else:
-				res2=[]
-				for r in res:
-					if r.status=='installed':
-						res2.append(r)
-				if len(res2)==1:
-					return res2[0]
-				name=res[0].packageInfo.name
-				versionEntry=res[0].getSelfEntry()
-				res2=res[0]
-				for r in res[1:]:
-					if(name!=r.packageInfo.name):
-						# log.warning("failed to decide require package for: "+entry.name)
-						# for r1 in res:
-						# 	log.info(" one of provider is: "+r1.fullName)
-						return res2
-					if compareVersion(versionEntry.version,r.getSelfEntry().version)==-1:
-						versionEntry=r.getSelfEntry()
-						res2=r
-				return res2
-		#TODO:check res[0][1] is match
-		return res[0]
-def getDependes(package,dependesSet:set):
+				if compareEntry(name_versionEntry[name][0],r.getSelfEntry())==-1:
+					name_versionEntry[name]=(r.getSelfEntry(),r)
+		if len(name_versionEntry)==1:
+			return [name_versionEntry[res[0].fullName][1]]
+		if requireName in name_versionEntry:
+			return [name_versionEntry[requireName][1]]
+		log.warning("failed to decide require package for: "+entry.name+" in pacakge: "+packageName)
+		for r1 in res:
+			log.info(" one of provider is: "+r1.fullName)
+		log.info(" select: "+name_versionEntry[res[0].fullName][1].fullName)
+		return [name_versionEntry[res[0].fullName][1]]
+
+def getDependes_dfs(package,dependesSet:set,entryMap,includeInstalled):
 	if package in dependesSet:
 		return
+	if includeInstalled is False and package.status=='installed':
+		return
+	if package.status=='uninstalled':
+		package.status='willInstalled'
 	dependesSet.add(package)
+	package.findRequires(entryMap)
+	# if includeInstalled is True:
+	# 	print("%"+package.fullName,package.packageInfo.version,package.packageInfo.release,package.status)
+	# 	print("%",end="")
+	# 	for p in package.requirePointers:
+	# 		print(" "+p.fullName,end="")
+	# 	print("")
 	for p in package.requirePointers:
-		getDependes(p,dependesSet)	
-
+		getDependes_dfs(p,dependesSet,entryMap,includeInstalled)	
+def getDependsPrepare(entryMap,package):
+	depset=set()
+	getDependes_dfs(package,depset,entryMap,False)
+	return depset
+def getDepends(entryMap,package,depset):
+	getDependes_dfs(package,depset,entryMap,True)
+	return depset
 		
 def defaultCVEList():
 	return 0
@@ -213,7 +253,23 @@ class SpecificPackage:
 				requires[require.name]=[]
 			requires[require.name].append(require)
 		for requireName,requireList in requires.items():
-			res=entryMap.queryRequires(requireName,requireList)
-			if res is not None and res not in requirePackageSet:
-				self.addRequirePointer(res)
-				requirePackageSet.add(res)
+			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
+			for r in res:
+				if r not in requirePackageSet:
+					self.addRequirePointer(r)
+					requirePackageSet.add(r)
+		if self.status=="installed":
+			return
+		for requireName,requireList in requires.items():
+			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
+			for r in res:
+				if r not in requirePackageSet:
+					self.addRequirePointer(r)
+					requirePackageSet.add(r)
+	def dump(self):
+		print(self.fullName,self.packageInfo.version,self.packageInfo.release,self.status)
+		for p in self.requirePointers:
+			print(" "+p.fullName,end="")
+		print("")
+	def getSelfEntry(self):
+		return self.providesInfo[-1]
