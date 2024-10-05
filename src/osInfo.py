@@ -1,4 +1,5 @@
 from subprocess import PIPE, Popen
+import json
 OSName=""
 OSDist=""
 arch=""

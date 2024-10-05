@@ -160,7 +160,9 @@ class SourcesListManager:
 		for file in os.listdir(sourcesd):
 			distPath=os.path.join(sourcesd, file)
 			if os.path.isdir(distPath):
-				dist=file.split('-')[0]
+				dist=file.rsplit('-',1)[0]
+				if dist.endswith('-source'):
+					continue
 				repoPath=os.path.join(distPath,'repodata')
 				primaryFilePath=getPrimaryFilePath(repoPath)
 				if primaryFilePath is not None:

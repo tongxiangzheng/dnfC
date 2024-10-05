@@ -90,6 +90,8 @@ def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListMan
 				release=version_release.rsplit('-',1)[1]
 			dist=version_dist[1]
 			channel=readStr(f)
+			if channel=="system":
+				continue
 			#print(osType,dist,name,version,release)
 			package=sourcesListManager.getSpecificPackage(fullName,dist,version,release,arch)
 			if package is not None:
@@ -147,8 +149,8 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	
 	res=dict()
 	for p in selectedPackages:
-		depends=SpecificPackage.getDependsPrepare(p)
+		depends=SpecificPackage.getDependsPrepare(entryMap,p)
 	for p in selectedPackages:
-		depends=SpecificPackage.getDepends(p,set())
+		depends=SpecificPackage.getDepends(entryMap,p,set())
 		res[p]=list(depends)
 	return res

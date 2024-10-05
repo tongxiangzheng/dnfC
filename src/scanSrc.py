@@ -141,9 +141,11 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 			if len(name_arch.split('.'))!=2:
 				raise Exception("unexpected format")
 			version_dist=readStr(f).rsplit('.',1)
-			version=version_dist[0].split(':')[-1]
-			release=version.rsplit('-',1)[-1]
-			version=version.rsplit('-',1)[0]
+			version_release=version_dist[0].split(':')[-1]
+			version=version_release.rsplit('-',1)[0]
+			release=None
+			if len(version_release.rsplit('-',1))>1:
+				release=version_release.rsplit('-',1)[1]
 			dist=version_dist[1]
 			channel=readStr(f)[1:]
 			if channel=="system":

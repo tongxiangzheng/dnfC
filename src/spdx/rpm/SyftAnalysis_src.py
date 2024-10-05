@@ -81,7 +81,8 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path,ExternalDependencies,sbomTy
     matrix = np.zeros((1024, 1024))
     # 生成syft普通json
     command_syft = f"{syft_path11} scan  {scan_path} -o json"
-    syft_output = subprocess.check_output(command_syft, shell=True)
+    p = subprocess.Popen(command_syft, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    syft_output, stderr = p.communicate()
     syft_json = json.loads(syft_output.decode())
 
     artifacts = syft_json['artifacts']

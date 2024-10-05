@@ -21,6 +21,8 @@ def spdxmain(packageName,packageFilePath,dependsList,sbomType='spdx',saveSbomPat
 		print(depends)
 	ExternalDependencies=getExternalDependencies(dependsList)
 	# resPath=packageFilePath+".spdx.json"
+	if saveSbomPath is None:
+		saveSbomPath='/tmp/dnfC'
 	if sbomType == 'spdx':
 		resPath = saveSbomPath+packageName+".spdx.json"
 	if sbomType == 'cyclonedx':
