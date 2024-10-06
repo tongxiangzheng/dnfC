@@ -39,7 +39,8 @@ RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" /etc/yum.repos.d/CentOS-*
 RUN sed -i -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" /etc/yum.repos.d/CentOS-*
 RUN dnf clean all
 RUN dnf makecache
-RUN dnf install -y rpmdevtools rpmdev-setuptree 
+RUN dnf install -y rpmdevtools
+RUN rpmdev-setuptree 
 
 COPY /SPECS/dnfC.spec /root/rpmbuild/SPECS/dnfC.spec
 COPY etc /root/dnfC-1.0/etc

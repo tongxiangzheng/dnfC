@@ -55,10 +55,11 @@ def getSpecFile(src_rpm_path):
 	# 			return specStr.decode('UTF-8')
 	# return None
 def parseSpecFile(specInfo):
+	print(specInfo)
 	requireEntrys=[]
 	for info in specInfo.split('\n'):
 		info=info.strip()
-		if info.startswith('BuildRequires:'):
+		if info.startswith('Requires:'):
 			requireEntrys_raw=info.split(':')[1].split(',')
 			requireEntrys_raw2=[]
 			for entrys in requireEntrys_raw:
@@ -76,6 +77,7 @@ def parseSpecFile(specInfo):
 					needMerge=True
 				else:
 					requireEntrys.append(entrys)
+	print(requireEntrys)
 	return RepoFileManager.parseRPMItemInfo(requireEntrys)
 def queryRPMInfo(fileName):
 	rpmhdr={}
@@ -128,7 +130,7 @@ def parseProvides(PackageName)->list:
         return RepoFileManager.parseRPMItemInfo(data)
 def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesListManager):
 	res=list()
-	with os.popen("yum list installed") as f:
+	with os.popen("/usr/bin/dnf list --installed") as f:
 		readStr(f)
 		readStr(f)		#ignore [Installed,Packages]
 		while True:
@@ -185,7 +187,7 @@ def scansrc(args):
 	depends=parseSpecFile(specInfo)
 	rpmInfo=queryRPMInfo(srcFile)
 	packageInfo=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,rpmInfo['name'],rpmInfo['version'],rpmInfo['release'],osInfo.arch)
-	srcpackage=SpecificPackage.SpecificPackage(packageInfo,rpmInfo['name'],[],depends,osInfo.arch,"installed")
+	srcpackage=SpecificPackage.SpecificPackage(packageInfo,rpmInfo['name'],[],depends,osInfo.arch,"willInstalled")
 	sourcesListManager=SourcesListManager.SourcesListManager()
 	repoPackages=sourcesListManager.getAllPackages()
 	repoPackages.extend(setInstalledPackagesStatus(sourcesListManager))
@@ -198,7 +200,7 @@ def scansrc(args):
 		package.registerProvides(entryMap)
 
 	
-	depset=SpecificPackage.getDepends(entryMap,package,set())
+	depset=SpecificPackage.getDepends(entryMap,srcpackage,set())
 	depends=dict()
 	for p in depset:
 		depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()

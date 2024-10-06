@@ -235,7 +235,8 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             fileSpdxIdList.append(spdxId_result)
             document.files.append(file1)
     except KeyError:
-        print("'files' field not found in the JSON data.")
+        #print("'files' field not found in the JSON data.")
+        pass
 
 
 
@@ -466,7 +467,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
             fileSpdxIdList.append(spdxId_result)
             document.files.append(file1)
     except KeyError:
-        print("'files' field not found in the JSON data.")
+        #print("'files' field not found in the JSON data.")
+        pass
 
     # for spdxIdLi in fileSpdxIdList:
     #     contains_relationship1 = Relationship("SPDXRef-Package", RelationshipType.CONTAINS, "SPDXRef-File1")

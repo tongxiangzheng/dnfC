@@ -187,12 +187,12 @@ def getDependes_dfs(package,dependesSet:set,entryMap,includeInstalled):
 		package.status='willInstalled'
 	dependesSet.add(package)
 	package.findRequires(entryMap)
-	# if includeInstalled is True:
-	# 	print("%"+package.fullName,package.packageInfo.version,package.packageInfo.release,package.status)
-	# 	print("%",end="")
-	# 	for p in package.requirePointers:
-	# 		print(" "+p.fullName,end="")
-	# 	print("")
+	if includeInstalled is True:
+		print("%"+package.fullName,package.packageInfo.version,package.packageInfo.release,package.status)
+		print("%",end="")
+		for p in package.requirePointers:
+			print(" "+p.fullName,end="")
+		print("")
 	for p in package.requirePointers:
 		getDependes_dfs(p,dependesSet,entryMap,includeInstalled)	
 def getDependsPrepare(entryMap,package):

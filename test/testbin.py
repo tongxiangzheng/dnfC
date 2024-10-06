@@ -1,7 +1,7 @@
 import autotest_binary
 
-testName="evolution-data-server"
-with open("jammyinfo.txt") as f:
+testName="CUnit"
+with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]
 for info in data:
