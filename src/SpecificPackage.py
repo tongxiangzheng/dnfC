@@ -271,5 +271,10 @@ class SpecificPackage:
 		for p in self.requirePointers:
 			print(" "+p.fullName,end="")
 		print("")
+	def getNameVersion(self):
+		res=self.fullName+"-"+self.packageInfo.version
+		if self.packageInfo.release is not None:
+			res+="-"+self.packageInfo.release
+		return res
 	def getSelfEntry(self):
 		return self.providesInfo[-1]

@@ -25,7 +25,7 @@ with open("/etc/os-release") as f:
 	data=f.readlines()
 	for info in data:
 		if info.startswith('ID='):
-			OSName=removeQuotationMark(info.strip()[3:0])
+			OSName=removeQuotationMark(info.strip().split('=')[1])
 		if info.startswith('VERSION_ID'):
 			OSDist=removeQuotationMark(info.strip().split('=')[1])
 		#if info.startswith('VERSION_ID'):

@@ -104,7 +104,7 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies,sbomType):
     # convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
         convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
     if sbomType == 'cyclonedx':
-        convertCyclonedx(syft_json,project_name,output_file,ExterDependencies)
+        convertCyclonedx(syft_json,project_name,output_file,ExternalDependencies)
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
 # scan_path = "/home/jiliqiang/RPM/rpm/keepass-2.54-2.mga9.noarch.rpm"
 # output_file = "/home/jiliqiang/RPM/rpm/SBOM/keepass-2.54-2.mga9.noarch.rpm.spdx.json"

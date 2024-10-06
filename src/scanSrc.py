@@ -127,7 +127,6 @@ def parseProvides(PackageName)->list:
         data=f.readlines()
         return RepoFileManager.parseRPMItemInfo(data)
 def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesListManager):
-	osType="centos"
 	res=list()
 	with os.popen("yum list installed") as f:
 		readStr(f)
@@ -155,7 +154,7 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 			if package is not None:
 				package.status="installed"
 			else:
-				packageInfo=PackageInfo.PackageInfo(osType,dist,fullName,version,release,arch)
+				packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,fullName,version,release,arch)
 				provides=parseProvides(fullName)
 				requires=parseRequires(fullName)
 				res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,None,"installed"))
@@ -166,20 +165,20 @@ def scansrc(args):
 	genSpdx=False
 	spdxPath='.'
 	genCyclonedx=False
-	cyclonePath='.'
+	cyclonedxPath='.'
 	for option in args:
 		if option.startswith('--genspdx='):
 			genSpdx=True
 			spdxPath=option.split('=',1)[1]
 		elif option.startswith('--gencyclonedx='):
 			genCyclonedx=True
-			cyclonePath=option.split('=',1)[1]
+			cyclonedxPath=option.split('=',1)[1]
 		elif option=="scansrc":
 			continue
 		else:
 			srcFile=option
-	if spdxPath is False and cyclonePath is False:
-		spdxPath=True
+	if genSpdx is False and genCyclonedx is False:
+		genSpdx=True
 	srcPath=os.path.join("/tmp/dnfC/",normalize.normalReplace(os.path.abspath(srcFile)))
 	shutil.copyfile(srcFile,srcPath)
 	specInfo=getSpecFile(srcPath)
@@ -191,22 +190,19 @@ def scansrc(args):
 	repoPackages=sourcesListManager.getAllPackages()
 	repoPackages.extend(setInstalledPackagesStatus(sourcesListManager))
 	entryMap=SpecificPackage.EntryMap()
+
 	srcpackage.registerProvides(entryMap)
 	for package in repoPackages:
+		if package.fullName in srcpackage.fullName:
+			continue
 		package.registerProvides(entryMap)
-	
-	for package in repoPackages:
-		package.findRequires(entryMap)
-	srcpackage.findRequires(entryMap)
 
 	
-	depset=set()
-	SpecificPackage.getDependes(package,depset)
+	depset=SpecificPackage.getDepends(entryMap,package,set())
 	depends=dict()
 	for p in depset:
 		depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 	dependsList=list(depends.values())
-	print(dependsList)
 	if genSpdx is True:
 		srcmain(normalize.normalReplace(srcpackage.fullName),srcPath,dependsList,'spdx',spdxPath)
 	if genCyclonedx is True:

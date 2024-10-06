@@ -29,17 +29,26 @@ def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
 		return {}
 def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedxPath=None,dumpFileOnly=False):
 	assumeNo=False
+	dnfArgs=[]
 	for option in args:
 		if option=='--assumeno':
 			assumeNo=True
-		if option.startswith('--genspdx'):
+		elif option.startswith('--genspdx'):
 			genSpdx=True
+			if len(option.split('=',1))==1:
+				print("usage: --genspdx=/path/to/save")
+				return False
 			saveSpdxPath=option.split('=',1)[1]
-		if option.startswith('--gencyclonedx'):
+		elif option.startswith('--gencyclonedx'):
 			genCyclonedx=True
+			if len(option.split('=',1))==1:
+				print("usage: --gencyclonedx=/path/to/save")
+				return False
 			saveCyclonedxPath=option.split('=',1)[1]
+		else:
+			dnfArgs.append(option)
 	sourcesListManager=SourcesListManager.SourcesListManager()
-	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager,dumpFileOnly)
+	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(dnfArgs,sourcesListManager,dumpFileOnly)
 	if len(selectedPackages_willInstallPackages)==0:
 		return True
 	dnfConfigure=loadConfig.loadConfig()

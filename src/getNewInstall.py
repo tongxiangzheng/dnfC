@@ -27,7 +27,7 @@ def parseProvides(PackageName)->list:
 		return RepoFileManager.parseRPMItemInfo(data)
 
 def getSpecificInstalledPackage(fullName):
-	p = Popen(f"/usr/bin/dnf -qi {fullName}", shell=True, stdout=PIPE, stderr=PIPE)
+	p = Popen(f"/usr/bin/rpm -qi {fullName}", shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	data=stdout.decode().split('\n')
 	rpmhdr=dict()
@@ -50,10 +50,10 @@ def getSpecificInstalledPackage(fullName):
 	else:
 		release=None
 		dist=r[0]
-	packageInfo=PackageInfo(osInfo.OSName,dist,name,version,release,arch)
+	packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,name,version,release,arch)
 	provides=parseProvides(fullName)
 	requires=parseRequires(fullName)
-	package=SpecificPackage(packageInfo,fullName,provides,requires,arch)
+	package=SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch)
 	package.status="installed"
 	return package
 def readStr(f):
@@ -103,7 +103,7 @@ def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListMan
 
 	
 def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,includeInstalled=False)->dict:
-	cmd="/usr/bin/dnf --assumeno"
+	cmd="/usr/bin/dnf install --assumeno"
 	argset=set(args)
 	for arg in args:
 		cmd+=' '+arg
@@ -116,7 +116,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	data=stdout.decode()
 	data=data.split('\n')
 	i=-1
-	while i < len(data):
+	while i+1 < len(data):
 		i+=1
 		info=data[i]
 		if info.startswith('Error: This command has to be run with superuser privileges'):
@@ -140,10 +140,11 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	entryMap=SpecificPackage.EntryMap()
 	for p in installPackages:
 		p.registerProvides(entryMap)
-		if p.fullName in argset:
+		if p.fullName in argset or p.getNameVersion() in argset:
 			selectedPackages.append(p)
+
 	if includeInstalled is True:
-		installedPackages=getInstalledPackageInfo()
+		installedPackages=getInstalledPackageInfo(sourcesListManager)
 		for p in installedPackages:
 			p.registerProvides(entryMap)
 	
