@@ -19,16 +19,16 @@ def parseInstallInfo(info:list,sourcesListManager:SourcesListManager.SourcesList
 	specificPackage.status="willInstalled"
 	return specificPackage
 def parseRequires(PackageName)->list:
-	with os.popen("rpm -q --requires "+PackageName) as f:
+	with os.popen("rpm -q --requires '"+PackageName+"'") as f:
 		data=f.readlines()
 		return RepoFileManager.parseRPMItemInfo(data)
 def parseProvides(PackageName)->list:
-	with os.popen("rpm -q --provides "+PackageName) as f:
+	with os.popen("rpm -q --provides '"+PackageName+"'") as f:
 		data=f.readlines()
 		return RepoFileManager.parseRPMItemInfo(data)
 
 def getSpecificInstalledPackage(fullName):
-	p = Popen(f"/usr/bin/rpm -qi {fullName}", shell=True, stdout=PIPE, stderr=PIPE)
+	p = Popen(f"/usr/bin/rpm -qi '{fullName}'", shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	data=stdout.decode().split('\n')
 	rpmhdr=dict()
@@ -106,7 +106,10 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	cmd="/usr/bin/dnf install --assumeno"
 	argset=set(args)
 	for arg in args:
-		cmd+=' '+arg
+		if '(' in arg or ')' in arg:
+			cmd+=" '"+arg+"'"
+		else:
+			cmd+=' '+arg
 	installPackages=[]
 	#log.info('cmd is '+cmd)
 	#actualPackageName=packageName
@@ -117,6 +120,8 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	data=stdout.decode()
 	data=data.split('\n')
 	i=-1
+	selectedPackages=[]
+	inSelectSection=True
 	while i+1 < len(data):
 		i+=1
 		info=data[i]
@@ -127,6 +132,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 			if len(info)==0:
 				continue
 			if info=="Installing dependencies:" or info=="Installing weak dependencies:":
+				inSelectSection=False
 				continue
 			if info=="Transaction Summary" or info=="Enabling module streams:":
 				break
@@ -134,17 +140,15 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 			while len(info) < 6:
 				i+=1
 				info.extend(data[i].strip().split())
-			installPackages.append(parseInstallInfo(info,sourcesListManager))
+			package=parseInstallInfo(info,sourcesListManager)
+			installPackages.append(package)
+			if inSelectSection is True:
+				selectedPackages.append(package)
 		elif info.startswith('Installing:'):
 			installInfoSection=True
-	selectedPackages=[]
 	entryMap=SpecificPackage.EntryMap()
 	for p in installPackages:
 		p.registerProvides(entryMap)
-		print(p.fullName)
-		if p.fullName in argset or p.getNameVersion() in argset:
-			selectedPackages.append(p)
-
 	if includeInstalled is True:
 		installedPackages=getInstalledPackageInfo(sourcesListManager)
 		for p in installedPackages:

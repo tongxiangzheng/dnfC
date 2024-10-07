@@ -17,17 +17,18 @@ import scanDnf
 
 def runDnf(args,setyes=False):
 	cmd="/usr/bin/dnf"
-	setyes=False
 	for arg in args:
 		if arg=='-y':
-			setyes=False
-			cmd+=" "+arg
+			setyes=True
 		elif arg.startswith('--genspdx'):
 			pass
 		elif arg.startswith('--gencyclonedx'):
 			pass
 		else:
-			cmd+=" "+arg
+			if '(' in arg or ')' in arg:
+				cmd+=" '"+arg+"'"
+			else:
+				cmd+=" "+arg
 	if setyes is True:
 		cmd+=" -y"
 	return os.system(cmd)
