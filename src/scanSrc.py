@@ -8,77 +8,67 @@ import SpecificPackage
 import PackageInfo
 import normalize
 import shutil
-import re
+import requests
+import loadConfig
 import osInfo
 from spdx.srcmain import srcmain
 from loguru import logger as log
 DIR = os.path.split(os.path.abspath(__file__))[0]
 
-def getSpecFile(src_rpm_path):
-	dpkg_command = f'rpm2archive {src_rpm_path}'
-	os.system(dpkg_command)
-	#创建一个文件夹放置解压后的文件
-	tgzFilepath = src_rpm_path+'.tgz'
-	dir_Path = re.sub(r'\.rpm$','',src_rpm_path)
-	if os.path.isdir(dir_Path):
-		rm_command = f'rm -rf {dir_Path}'
-		os.system(rm_command)
-	mkdir_command = f'mkdir {dir_Path}'
-	os.system(mkdir_command)
-	#解压tgz文件
-	unpack_command = f'tar -zxvf {tgzFilepath} -C {dir_Path}'
-	p = Popen(unpack_command, shell=True, stdout=PIPE, stderr=PIPE)
-	stdout, stderr = p.communicate()
-
-	#找到关键压缩包，解压后，得到解压后的文件夹
-	for root,dirs,files in os.walk(dir_Path):
-		for file in files:
-			if file.endswith('.spec'):
-				#获取压缩包完整路径
-				spec_path = os.path.join(root,file)
-				with open(spec_path,"r") as f:
-					return f.read()
-	return None
-
-	# with tarfile.open(fileName) as f:
-	# 	for e in f.getmembers():
-	# 		if e.name.endswith('.spec'):
-	# 			specFilePointer=f.extractfile(e)
-	# 			return specFilePointer.read()
-				
-	# with libarchive.public.file_reader(fileName) as e:
-	# 	for entry in e:
-	# 		if entry.pathname.endswith('.spec'):
-	# 			specStr=b""
-	# 			for block in entry.get_blocks():
-	# 				specStr+=block
-	# 			return specStr.decode('UTF-8')
-	# return None
-def parseSpecFile(specInfo):
-	print(specInfo)
-	requireEntrys=[]
-	for info in specInfo.split('\n'):
-		info=info.strip()
-		if info.startswith('Requires:'):
-			requireEntrys_raw=info.split(':')[1].split(',')
-			requireEntrys_raw2=[]
-			for entrys in requireEntrys_raw:
-				for e2 in entrys.split(' '):
-					e2=e2.strip()
-					if e2!='':
-						requireEntrys_raw2.append(e2)
-			needMerge=False
-			for entrys in requireEntrys_raw2:
-				if needMerge is True:
-					requireEntrys[-1]+=' '+entrys
-					needMerge=False
-				elif entrys == '>' or entrys =='>=' or entrys =='<' or entrys =='<=' or entrys =='=':
-					requireEntrys[-1]+=' '+entrys
-					needMerge=True
-				else:
-					requireEntrys.append(entrys)
-	print(requireEntrys)
-	return RepoFileManager.parseRPMItemInfo(requireEntrys)
+def postFile(file,dnfConfigure:loadConfig.dnfcConfigure):
+	try:
+		files = {'file': open(file, 'rb')}
+		response = requests.post(dnfConfigure.postfileURL,files=files)
+	except requests.exceptions.ConnectionError as e:
+		print("failed to upload file: Unable to connect: "+dnfConfigure.postfileURL)
+		return None
+	except Exception as e:
+		print(f'failed to upload file: {e}')
+		return None
+	if response.status_code == 200:
+		data=response.json()
+		if data['error']==0:
+			return data['token']
+		else:
+			print("failed to upload file: failinfo: "+data['errorMessage'])
+			return None
+	else:
+		print(f'failed to upload file: Request failed with status code {response.status_code}')
+		return None
+	
+def queryBuildInfo(srcFile,srcFile2,osType,osDist,arch,dnfConfigure:loadConfig.dnfcConfigure):
+	src1token=postFile(srcFile,dnfConfigure)
+	if src1token is None:
+		return None
+	src2token=None
+	if srcFile2 is not None:
+		src2token=postFile(srcFile2,dnfConfigure)
+		if src2token is None:
+			return None
+	try:
+		data={"srcFile":src1token,"srcFile2":src2token,"osType":osType,"osDist":osDist,"arch":arch}
+		print("waiting build from server... It may take some time.")
+		response = requests.post(dnfConfigure.querybuildinfoURL, json=data)
+	except requests.exceptions.ConnectionError as e:
+		print("failed to query buildInfo: Unable to connect: "+dnfConfigure.querybuildinfoURL)
+		return None
+	except Exception as e:
+		print(f'failed to query buildInfo: {e}')
+	if response.status_code == 200:
+		data=response.json()
+		if data['error']==0:
+			return data['buildinfo']
+		else:
+			print("failed to query package info: failinfo: "+data['errorMessage'])
+			return None
+	else:
+		print(f'failed to query buildInfo: Request failed with status code {response.status_code}')
+		return None
+def getSrcPackageDepends(srcPath):
+	dnfConfigure=loadConfig.loadConfig()
+	if dnfConfigure is None:
+		print('ERROR: cannot load config file in /etc/dnfC/config.json, please check config file ')
+		return None
 def queryRPMInfo(fileName):
 	rpmhdr={}
 	with os.popen("rpm -qi --nosignature "+fileName) as f:
@@ -183,8 +173,9 @@ def scansrc(args):
 		genSpdx=True
 	srcPath=os.path.join("/tmp/dnfC/",normalize.normalReplace(os.path.abspath(srcFile)))
 	shutil.copyfile(srcFile,srcPath)
-	specInfo=getSpecFile(srcPath)
-	depends=parseSpecFile(specInfo)
+	depends=getSrcPackageDepends(srcPath)
+	if depends is None:
+		return 1
 	rpmInfo=queryRPMInfo(srcFile)
 	packageInfo=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,rpmInfo['name'],rpmInfo['version'],rpmInfo['release'],osInfo.arch)
 	srcpackage=SpecificPackage.SpecificPackage(packageInfo,rpmInfo['name'],[],depends,osInfo.arch,"willInstalled")

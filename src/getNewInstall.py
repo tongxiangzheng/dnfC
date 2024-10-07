@@ -16,6 +16,7 @@ def parseInstallInfo(info:list,sourcesListManager:SourcesListManager.SourcesList
 		release=version_release[1]
 	dist=info[3]
 	specificPackage=sourcesListManager.getSpecificPackage(name,dist,version,release,arch)
+	specificPackage.status="willInstalled"
 	return specificPackage
 def parseRequires(PackageName)->list:
 	with os.popen("rpm -q --requires "+PackageName) as f:
@@ -53,8 +54,7 @@ def getSpecificInstalledPackage(fullName):
 	packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,name,version,release,arch)
 	provides=parseProvides(fullName)
 	requires=parseRequires(fullName)
-	package=SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch)
-	package.status="installed"
+	package=SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,status="installed")
 	return package
 def readStr(f):
 	res=""
@@ -111,6 +111,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	#log.info('cmd is '+cmd)
 	#actualPackageName=packageName
 	installInfoSection=False
+	#print(cmd)
 	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	data=stdout.decode()
@@ -140,6 +141,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	entryMap=SpecificPackage.EntryMap()
 	for p in installPackages:
 		p.registerProvides(entryMap)
+		print(p.fullName)
 		if p.fullName in argset or p.getNameVersion() in argset:
 			selectedPackages.append(p)
 

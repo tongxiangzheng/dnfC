@@ -58,9 +58,14 @@ docker build --output=<二进制文件保存目录> --target=binary -f docker/do
 
 构建rpm软件包
 ```
-docker build --output=<软件包保存目录> --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile .
+docker build --output=<软件包保存目录> --build-arg SYSTEM_NAME="<操作系统名称>" --build-arg VERSION="<发行版版本>" --target=rpm_package -f docker/dockerfile .
 ```
 例如
 ```
-docker build --output=. --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile .
+docker build --output=. --build-arg SYSTEM_NAME="centos" --build-arg VERSION="8" --target=rpm_package -f docker/dockerfile .
+```
+或者
+```
+docker build --output=. --build-arg SYSTEM_NAME="openeuler/openeuler" --build-arg VER
+SION="24.03" --target=rpm_package -f docker/dockerfile .
 ```

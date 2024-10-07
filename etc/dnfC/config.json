@@ -1,5 +1,7 @@
 {
 	"server":{
-		"url":"http://127.0.0.1:8342/querycve/"
+		"querycve":"http://host.docker.internal:8342/querycve/",
+		"postfile":"http://host.docker.internal:8342/postfile/",
+		"querybuildinfo":"http://host.docker.internal:8342/rpm/querybuildinfo/"
 	}
 }

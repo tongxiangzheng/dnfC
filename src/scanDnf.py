@@ -14,7 +14,7 @@ def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
 
 def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
-	url=dnfConfigure.serverURL
+	url=dnfConfigure.querycveURL
 	try:
 		response = requests.post(url, json=spdxObj)
 	except requests.exceptions.ConnectionError as e:
@@ -45,6 +45,8 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 				print("usage: --gencyclonedx=/path/to/save")
 				return False
 			saveCyclonedxPath=option.split('=',1)[1]
+		elif option=="install":
+			pass
 		else:
 			dnfArgs.append(option)
 	sourcesListManager=SourcesListManager.SourcesListManager()
