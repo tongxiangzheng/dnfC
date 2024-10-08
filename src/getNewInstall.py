@@ -82,16 +82,15 @@ def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListMan
 			arch=name_arch.split('.')[-1]
 			if len(name_arch.split('.'))!=2:
 				raise Exception("unexpected format")
-			version_dist=readStr(f).rsplit('.',1)
-			version_release=version_dist[0].split(':')[-1]
+			version_release=readStr(f).split(':')[-1]
 			version=version_release.rsplit('-',1)[0]
 			release=None
 			if len(version_release.rsplit('-',1))>1:
 				release=version_release.rsplit('-',1)[1]
-			dist=version_dist[1]
-			channel=readStr(f)
-			if channel=="system":
-				continue
+				dist=release.rsplit('.',1)[1]
+			else:
+				raise Exception("unexpected format: "+version_release)
+			channel=readStr(f)[1:]
 			#print(osType,dist,name,version,release)
 			package=sourcesListManager.getSpecificPackage(fullName,dist,version,release,arch)
 			if package is not None:

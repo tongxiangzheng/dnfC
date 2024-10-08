@@ -2,7 +2,9 @@ import os
 import xml.dom.minidom
 import gzip
 import pyzstd
-from SpecificPackage import *
+import PackageInfo
+import SpecificPackage
+from loguru import logger as log
 def parseRPMItemInfo(data):
     res=[]
     for item in data:
@@ -54,7 +56,7 @@ def parseRPMItemInfo(data):
         if name is None:
             name=item
         #log.debug(" "+name)
-        res.append(PackageEntry(name,flags,version,release))
+        res.append(SpecificPackage.PackageEntry(name,flags,version,release))
     return res
 def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 	#fullName just for debug info, can be empty string
@@ -76,9 +78,9 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 		release=None
 		if subnode.hasAttribute('rel'):
 			release=subnode.getAttribute('rel').split('.')[0]
-		res.append(PackageEntry(name,flags,version,release))
+		res.append(SpecificPackage.PackageEntry(name,flags,version,release))
 	return res
-def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage:
+def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage.SpecificPackage:
 	fullName=node.getElementsByTagName('name')[0].firstChild.nodeValue
 	versionNode=node.getElementsByTagName('version')[0]
 	version=versionNode.getAttribute('ver').split(':')[-1]
@@ -99,8 +101,8 @@ def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificP
 	if len(res)!=0:
 		requires=parseEntry(res[0],fullName,'requires')
 	filePath=node.getElementsByTagName('location')[0].getAttribute('href')
-	packageInfo=PackageInfo(osType,dist,name,version,release,arch)
-	return SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
+	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
+	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
 
 def parseRPMFiles(repodata,osType,dist,repoURL):
 	#entryMap=EntryMap()
@@ -120,7 +122,7 @@ def parseRPMFiles(repodata,osType,dist,repoURL):
 class RepoFileManager:
 	def __init__(self,repoPath,osType,dist,repoURL):
 		self.repoPath=repoPath
-		self.packageMap=defaultdict(defaultNoneList)
+		self.packageMap=SpecificPackage.defaultdict(SpecificPackage.defaultNoneList)
 		if repoPath.endswith('.gz'):
 			with gzip.open(repoPath,"rb") as f:
 				data=f.read()
@@ -134,11 +136,15 @@ class RepoFileManager:
 	def queryPackage(self,name,version,release,arch):
 		#print("\nquery:")
 		#print(name,version,release,arch)
+		if "." not in release:
+			raise Exception("version have no '.' : "+release)
+		e=SpecificPackage.PackageEntry(name,"EQ",version,release)
 		if name in self.packageMap:
 			for specificPackage in self.packageMap[name]:
 				#print(specificPackage.packageInfo.version,specificPackage.packageInfo.release,specificPackage.packageInfo.arch)
-				if specificPackage.packageInfo.version==version and specificPackage.packageInfo.release==release and specificPackage.packageInfo.arch==arch:
-					return specificPackage
+				if SpecificPackage.compareEntry(specificPackage.getSelfEntry(),e)==0:
+					if specificPackage.packageInfo.arch==arch:
+							return specificPackage
 			return None
 	def getAllPackages(self):
 		res=[]

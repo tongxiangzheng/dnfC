@@ -214,8 +214,6 @@ class Counter:
 class SpecificPackage:
 	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,status="uninstalled",repoURL=None,fileName=""):
 		self.packageInfo=packageInfo
-		if packageInfo.version=="":
-			print(fullName,packageInfo.name)
 		self.fullName=fullName
 		self.providesInfo=provides
 		self.requiresInfo=requires
@@ -276,5 +274,3 @@ class SpecificPackage:
 		if self.packageInfo.release is not None:
 			res+="-"+self.packageInfo.release
 		return res
-	def getSelfEntry(self):
-		return self.providesInfo[-1]

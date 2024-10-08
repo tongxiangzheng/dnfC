@@ -12,8 +12,6 @@ def autotest_src(name,fullname,version,release,checkExist=True):
 			return 0
 		if not os.path.isfile("./binary/"+normalize.normalReplace(f"{fullname}.spdx.json")):
 			return 0
-	if "~" in version or (release is not None and "~" in release):
-		return 0
 	print(name,version,release)
 	version=version.split(':')[-1]
 	if release is None:

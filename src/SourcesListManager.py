@@ -4,8 +4,6 @@ import SpecificPackage
 import xml.dom.minidom
 import osInfo
 from loguru import logger as log
-#import dnf
-import json
 
 class SourceConfigItem:
 	def __init__(self,dist,primaryFilePath,repoURL):
@@ -102,17 +100,6 @@ def getPrimaryFilePath(repoPath)->str:
 				filePath=os.path.join(repoPath,fileName)
 			return filePath
 
-def queryDnfContext():
-	cmd="python3 -c 'import dnf, json; db = dnf.dnf.Base(); print(db.conf.substitutions)'"
-	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-	stdout, stderr = p.communicate()
-	raw_data=stdout.decode()
-	raw_data=raw_data.replace("\'","\"")
-	try:
-		data=json.loads(raw_data)
-	except Exception:
-		return None
-	return data
 class SourcesListManager:
 	def __init__(self):
 		self.binaryConfigItems=dict()
@@ -173,6 +160,12 @@ class SourcesListManager:
 	
 	def getSpecificPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
 		if dist not in self.binaryConfigItems:
+			#dist may be system or OS
+			for configItemList in self.binaryConfigItems.values():
+				for configItem in configItemList:
+					specificPackage=configItem.getSpecificPackage(name,version,release,arch)
+					if specificPackage is not None:
+						return specificPackage
 			return None
 		for configItem in self.binaryConfigItems[dist]:
 			specificPackage=configItem.getSpecificPackage(name,version,release,arch)
@@ -181,7 +174,7 @@ class SourcesListManager:
 		return None
 	def getAllPackages(self):
 		res=[]
-		for binaryConfigItem in self.binaryConfigItems.values():
+		for dist,binaryConfigItem in self.binaryConfigItems.items():
 			for configItem in binaryConfigItem:
 				res.extend(configItem.getAllPackages())
 		return res

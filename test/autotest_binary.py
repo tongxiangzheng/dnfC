@@ -9,9 +9,6 @@ def autotest_binary(infos,checkExist=True):
 		for info in infos:
 			if os.path.isfile("./binary/"+normalize.normalReplace(f"{info[0]}.spdx.json")):
 				return 0
-	for name,version,release in infos:
-		if "~" in version or (release is not None and "~" in release):
-			return 0
 	print("-------")
 	packages=["genspdx"]
 	for name,version,release in infos:
