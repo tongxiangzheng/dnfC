@@ -178,6 +178,8 @@ class EntryMap:
 		log.info(" select: "+name_versionEntry[res[0].fullName][1].fullName)
 		return [name_versionEntry[res[0].fullName][1]]
 
+debugMode=False
+
 def getDependes_dfs(package,dependesSet:set,entryMap,includeInstalled):
 	if package in dependesSet:
 		return
@@ -187,7 +189,7 @@ def getDependes_dfs(package,dependesSet:set,entryMap,includeInstalled):
 		package.status='willInstalled'
 	dependesSet.add(package)
 	package.findRequires(entryMap)
-	if includeInstalled is True:
+	if debugMode is True and includeInstalled is True:
 		print("%"+package.fullName,package.packageInfo.version,package.packageInfo.release,package.status)
 		print("%",end="")
 		for p in package.requirePointers:
@@ -213,6 +215,7 @@ class Counter:
 		return self.cnt
 class SpecificPackage:
 	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,status="uninstalled",repoURL=None,fileName=""):
+		provides.append(PackageEntry(fullName,"EQ",packageInfo.version,packageInfo.release))
 		self.packageInfo=packageInfo
 		self.fullName=fullName
 		self.providesInfo=provides
@@ -239,7 +242,7 @@ class SpecificPackage:
 		for provide in self.providesInfo:
 			entryMap.registerEntry(provide,self)
 	def getSelfEntry(self):
-		return PackageEntry(self.fullName,"EQ",self.packageInfo.version,self.packageInfo.release)
+		return self.providesInfo[-1]
 	def findRequires(self,entryMap:EntryMap)->None:
 		if self.haveFoundRequires is True:
 			return

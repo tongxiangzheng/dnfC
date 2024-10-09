@@ -45,6 +45,5 @@ if __name__ == "__main__":
 		if autotest_binary(infos)!=0:
 			print(infos)
 			break
-		break
 		
 		#autotest_src(name,version,release)
