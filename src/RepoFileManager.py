@@ -65,32 +65,32 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 	for subnode in nodelist:
 		if subnode.nodeType==xml.dom.Node.TEXT_NODE:
 			continue
-		name=subnode.getAttribute('name')
+		name=subnode.getAttribute('name').strip()
 		flags=None
 		if subnode.hasAttribute('flags'):
-			flags=subnode.getAttribute('flags')
+			flags=subnode.getAttribute('flags').strip()
 		version=None
 		if subnode.hasAttribute('ver'):
-			version=subnode.getAttribute('ver')
+			version=subnode.getAttribute('ver').strip()
 		else:
 			if flags is not None:
 				log.warning(fullName+" have a package have flags but no version")
 		release=None
 		if subnode.hasAttribute('rel'):
-			release=subnode.getAttribute('rel').split('.')[0]
+			release=subnode.getAttribute('rel').strip().split('.')[0]
 		res.append(SpecificPackage.PackageEntry(name,flags,version,release))
 	return res
 def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage.SpecificPackage:
 	fullName=node.getElementsByTagName('name')[0].firstChild.nodeValue
 	versionNode=node.getElementsByTagName('version')[0]
-	version=versionNode.getAttribute('ver').split(':')[-1]
+	version=versionNode.getAttribute('ver').strip().split(':')[-1]
 	sourceTag=node.getElementsByTagName('rpm:sourcerpm')
 	if sourceTag[0].firstChild is not None:
 		sourcerpm=sourceTag[0].firstChild.nodeValue
 		name=sourcerpm.split('-'+version)[0]
 	else:
 		name=fullName
-	release=versionNode.getAttribute('rel')
+	release=versionNode.getAttribute('rel').strip()
 	arch=node.getElementsByTagName('arch')[0].firstChild.nodeValue
 	provides=[]
 	res=node.getElementsByTagName('rpm:provides')
@@ -100,7 +100,7 @@ def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificP
 	res=node.getElementsByTagName('rpm:requires')
 	if len(res)!=0:
 		requires=parseEntry(res[0],fullName,'requires')
-	filePath=node.getElementsByTagName('location')[0].getAttribute('href')
+	filePath=node.getElementsByTagName('location')[0].getAttribute('href').strip()
 	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
 	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
 
@@ -130,8 +130,10 @@ class RepoFileManager:
 			with open(repoPath, "rb") as f:
 				data = f.read()
 				data = pyzstd.decompress(data)
-		packages=parseRPMFiles(data,osType,dist,repoURL)
-		for package in packages:
+		else:
+			print("warning: cannot extract file "+repoPath)
+		self.packages=parseRPMFiles(data,osType,dist,repoURL)
+		for package in self.packages:
 			self.packageMap[package.fullName].append(package)
 	def queryPackage(self,name,version,release,arch):
 		#print("\nquery:")
@@ -147,9 +149,6 @@ class RepoFileManager:
 							return specificPackage
 			return None
 	def getAllPackages(self):
-		res=[]
-		for packageList in self.packageMap.values():
-			res.extend(packageList)
-		return res
+		return self.packages
 		
 	

@@ -262,7 +262,7 @@ class SpecificPackage:
 		if self.status=="installed":
 			return
 		for requireName,requireList in requires.items():
-			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
+			res=entryMap.queryRequires(self.fullName,requireName,requireList,False)
 			for r in res:
 				if r not in requirePackageSet:
 					self.addRequirePointer(r)

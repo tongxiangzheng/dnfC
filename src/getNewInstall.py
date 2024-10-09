@@ -14,6 +14,8 @@ def parseInstallInfo(info:list,sourcesListManager:SourcesListManager.SourcesList
 	release=None
 	if len(version_release)>1:
 		release=version_release[1]
+	else:
+		print("warning: there is no release info for :"+name+" "+info[2])
 	dist=info[3]
 	specificPackage=sourcesListManager.getSpecificPackage(name,dist,version,release,arch)
 	specificPackage.status="willInstalled"
@@ -130,7 +132,7 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 			info=info.strip()
 			if len(info)==0:
 				continue
-			if info=="Installing dependencies:" or info=="Installing weak dependencies:":
+			if info=="Installing dependencies:" or info=="Installing weak dependencies:" or info=="Downgrading:":
 				inSelectSection=False
 				continue
 			if info=="Transaction Summary" or info=="Enabling module streams:":

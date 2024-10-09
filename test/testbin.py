@@ -1,6 +1,6 @@
 import autotest_binary
 
-testName="CUnit"
+testName="DCF"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]

@@ -81,7 +81,6 @@ def parseBuildInfo(buildInfo):
 	packageInfo=[]
 	requireInfo=[]
 	provideInfo=[]
-	print(buildInfo)
 	for info in buildInfo.split("\n"):
 		info=info.strip()
 		if info=="%package:":
