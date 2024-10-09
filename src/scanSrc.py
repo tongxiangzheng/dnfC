@@ -67,10 +67,13 @@ def parseRPMInfo(data):
 			pair[0]=pair[0].strip()
 			pair[1]=pair[1].strip()
 			rpmhdr[pair[0]]=pair[1]
-	name=rpmhdr['Name']
+	fullName=rpmhdr['Name']
 	version=rpmhdr['Version']
 	release=rpmhdr['Release']
+	srcrpmformat="-"+version+"-"+release+".src.rpm"
+	name=rpmhdr['Source RPM'][:-len(srcrpmformat)]
 	return{"name":name,
+		"fullName":fullName,
 		"version":version,
 		"release":release}
 #		"arch":rpmhdr['Architecture']}
@@ -94,8 +97,11 @@ def parseBuildInfo(buildInfo):
 			provides=RepoFileManager.parseRPMItemInfo(provideInfo)
 			requires=RepoFileManager.parseRPMItemInfo(requireInfo)
 			p=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,rpmInfo['name'],rpmInfo['version'],rpmInfo['release'],osInfo.arch)
-			package=SpecificPackage.SpecificPackage(p,rpmInfo['name'],provides,requires,osInfo.arch,"willInstalled")
+			package=SpecificPackage.SpecificPackage(p,rpmInfo['fullName'],provides,requires,osInfo.arch,"willInstalled")
 			res.append(package)
+			packageInfo=[]
+			requireInfo=[]
+			provideInfo=[]
 		else:
 			if type=="package":
 				packageInfo.append(info)
@@ -191,6 +197,8 @@ def scansrc(args):
 	if genSpdx is False and genCyclonedx is False:
 		genSpdx=True
 	srcPath=os.path.join("/tmp/dnfC/",normalize.normalReplace(os.path.abspath(srcFile)))
+	if not os.path.isdir("/tmp/dnfC/"):
+		os.makedirs("/tmp/dnfC/")
 	shutil.copyfile(srcFile,srcPath)
 	packagesInSrc=getSrcPackageInfo(srcPath)
 	if packagesInSrc is None:

@@ -1,4 +1,6 @@
 CUnit CUnit 2.1.3 24.oe2403
+CUnit CUnit-help 2.1.3 24.oe2403
+CUnit CUnit-devel 2.1.3 24.oe2403
 DCF DCF 1.0.0 6.oe2403
 GConf2 GConf2 3.2.6 27.oe2403
 GeoIP GeoIP 1.6.12 6.oe2403

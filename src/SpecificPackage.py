@@ -253,20 +253,27 @@ class SpecificPackage:
 			if require.name not in requires:
 				requires[require.name]=[]
 			requires[require.name].append(require)
+		solvedRequire=set()
 		for requireName,requireList in requires.items():
 			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
 			for r in res:
 				if r not in requirePackageSet:
 					self.addRequirePointer(r)
 					requirePackageSet.add(r)
+			if len(res)>0:
+				solvedRequire.add(requireName)
 		if self.status=="installed":
 			return
 		for requireName,requireList in requires.items():
+			if requireName in solvedRequire:
+				continue
 			res=entryMap.queryRequires(self.fullName,requireName,requireList,False)
 			for r in res:
 				if r not in requirePackageSet:
 					self.addRequirePointer(r)
 					requirePackageSet.add(r)
+			if len(res)>0:
+				solvedRequire.add(requireName)
 	def dump(self):
 		print(self.fullName,self.packageInfo.version,self.packageInfo.release,self.status)
 		for p in self.requirePointers:
