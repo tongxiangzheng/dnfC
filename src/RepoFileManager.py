@@ -5,6 +5,7 @@ import pyzstd
 import PackageInfo
 import SpecificPackage
 from loguru import logger as log
+from collections import defaultdict
 def parseRPMItemInfo(data):
     res=[]
     for item in data:
@@ -80,27 +81,36 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 			release=subnode.getAttribute('rel').strip().split('.')[0]
 		res.append(SpecificPackage.PackageEntry(name,flags,version,release))
 	return res
+def sub2dict(node):
+    subDict=defaultdict(SpecificPackage.defaultNoneList)
+    nodelist=node.childNodes
+    for subnode in nodelist:
+        name=subnode.nodeName
+        subDict[name].append(subnode)
+    return subDict
 def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage.SpecificPackage:
-	fullName=node.getElementsByTagName('name')[0].firstChild.nodeValue
-	versionNode=node.getElementsByTagName('version')[0]
+	childsNode=sub2dict(node)
+	packageFormat=childsNode['format'][0]
+	formatChilds=sub2dict(packageFormat)
+	sourceTag=formatChilds['rpm:sourcerpm'][0]
+	if sourceTag.firstChild is None:
+		return None
+	fullName=childsNode['name'][0].firstChild.nodeValue
+	versionNode=childsNode['version'][0]
 	version=versionNode.getAttribute('ver').strip().split(':')[-1]
-	sourceTag=node.getElementsByTagName('rpm:sourcerpm')
-	if sourceTag[0].firstChild is not None:
-		sourcerpm=sourceTag[0].firstChild.nodeValue
-		name=sourcerpm.split('-'+version)[0]
-	else:
-		name=fullName
+	sourcerpm=sourceTag.firstChild.nodeValue
+	name=sourcerpm.split('-'+version)[0]
 	release=versionNode.getAttribute('rel').strip()
-	arch=node.getElementsByTagName('arch')[0].firstChild.nodeValue
+	arch=childsNode['arch'][0].firstChild.nodeValue
 	provides=[]
-	res=node.getElementsByTagName('rpm:provides')
+	res=formatChilds['rpm:provides']
 	if len(res)!=0:
 		provides=parseEntry(res[0],fullName,'provides')
 	requires=[]
-	res=node.getElementsByTagName('rpm:requires')
+	res=formatChilds['rpm:requires']
 	if len(res)!=0:
 		requires=parseEntry(res[0],fullName,'requires')
-	filePath=node.getElementsByTagName('location')[0].getAttribute('href').strip()
+	filePath=childsNode['location'][0].getAttribute('href').strip()
 	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
 	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
 
@@ -114,8 +124,8 @@ def parseRPMFiles(repodata,osType,dist,repoURL):
 		if subnode.nodeType==xml.dom.Node.TEXT_NODE:
 			continue
 		package=parseRPMPackage(subnode,osType,dist,repoURL)
-		#package.registerProvides(entryMap)
-		res.append(package)
+		if package is not None:
+			res.append(package)
 	return res
 
 

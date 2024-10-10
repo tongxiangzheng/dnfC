@@ -1,6 +1,6 @@
 import sys
 import os
-import time
+import traceback
 DIR=os.path.split(os.path.abspath(__file__))[0]
 sys.path.insert(0,os.path.join(DIR,'..','src'))
 import dnfC
@@ -8,9 +8,9 @@ import normalize
 from subprocess import PIPE, Popen
 def autotest_src(name,fullname,version,release,checkExist=True):
 	if checkExist:
-		if os.path.isfile("./src/"+normalize.normalReplace(f"{fullname}.spdx.json")):
+		if os.path.isfile(f"./src/{name}/"+normalize.normalReplace(f"{fullname}.spdx.json")):
 			return 0
-		# if not os.path.isfile("./binary/"+normalize.normalReplace(f"{fullname}.spdx.json")):
+		# if not os.path.isfile(f"./binary/{name}/"+normalize.normalReplace(f"{fullname}.spdx.json")):
 		# 	return 0
 	print(name,version,release)
 	version=version.split(':')[-1]
@@ -28,8 +28,14 @@ def autotest_src(name,fullname,version,release,checkExist=True):
 		print("error: no src file")
 		return 1
 	else:
-		return dnfC.user_main(["scansrc",srcFile,"--genspdx=./src"], exit_code=False)
-
+		try:
+			if not os.path.isdir(f"./src/{name}"):
+				os.mkdir(f"./src/{name}")
+			res=dnfC.user_main(["scansrc",srcFile,f"--genspdx=./src/{name}"], exit_code=False)
+			return res
+		except Exception:
+			traceback.print_exc()
+			return 1
 if __name__ == "__main__":
 	with open("openEulerinfo.txt") as f:
 		data=f.readlines()

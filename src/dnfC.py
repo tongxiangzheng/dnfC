@@ -25,10 +25,7 @@ def runDnf(args,setyes=False):
 		elif arg.startswith('--gencyclonedx'):
 			pass
 		else:
-			if '(' in arg or ')' in arg:
-				cmd+=" '"+arg+"'"
-			else:
-				cmd+=" "+arg
+			cmd+=" '"+arg+"'"
 	if setyes is True:
 		cmd+=" -y"
 	return os.system(cmd)

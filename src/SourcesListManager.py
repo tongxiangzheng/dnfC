@@ -37,9 +37,8 @@ def parseRPMSources(data):
 			continue
 		if info.startswith('['):
 			if name is not None:
-				if not name.endswith('-source'):
-					if enabled=='1':
-						res.append((name,baseurl))
+				if enabled=='1':
+					res.append((name,baseurl))
 			name=info[1:-1]
 			baseurl=None
 			enabled='1'
@@ -48,9 +47,8 @@ def parseRPMSources(data):
 		elif info.startswith('enabled'):
 			enabled=info.split('=',1)[1].strip()
 	if name is not None:
-		if not name.endswith('-source'):
-			if enabled=='1':
-				res.append((name,baseurl))
+		if enabled=='1':
+			res.append((name,baseurl))
 	return res
 def parseRPMsrcSources(data):
 	name=None
@@ -63,9 +61,8 @@ def parseRPMsrcSources(data):
 			continue
 		if info.startswith('['):
 			if name is not None:
-				if name.endswith('-source'):
-					if enabled=='1':
-						res.append((name.split('-')[0],baseurl))
+				if enabled=='1':
+					res.append((name.split('-')[0],baseurl))
 			name=info[1:-1]
 			baseurl=None
 			enabled='1'
@@ -104,7 +101,7 @@ class SourcesListManager:
 	def __init__(self):
 		self.binaryConfigItems=dict()
 		self.rpmURL=dict()
-		self.srcURL=dict()
+		#self.srcURL=dict()
 		#db = dnf.dnf.Base()
 		#self.arch=db.conf.substitutions['arch']
 		#self.basearch=db.conf.substitutions['basearch']
@@ -148,8 +145,6 @@ class SourcesListManager:
 			distPath=os.path.join(sourcesd, file)
 			if os.path.isdir(distPath):
 				dist=file.rsplit('-',1)[0]
-				if dist.endswith('-source'):
-					continue
 				repoPath=os.path.join(distPath,'repodata')
 				primaryFilePath=getPrimaryFilePath(repoPath)
 				if primaryFilePath is not None:

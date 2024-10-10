@@ -1,5 +1,6 @@
 import sys
 import os
+import traceback
 DIR = os.path.split(os.path.abspath(__file__))[0]
 sys.path.append(os.path.join(DIR,"lib"))
 from collections import defaultdict
@@ -49,14 +50,14 @@ def compareVersion(version1,version2):
 				return -1
 			if v1i>v2i:
 				return 1
-		if len(v1l)<len(v2l):
-			return -1
-		if len(v1l)>len(v2l):
-			return 1
-	if len(v1)<len(v2):
-		return -1
-	if len(v1)>len(v2):
-		return 1
+		# if len(v1l)<len(v2l):
+		# 	return -1
+		# if len(v1l)>len(v2l):
+		# 	return 1
+	# if len(v1)<len(v2):
+	# 	return -1
+	# if len(v1)>len(v2):
+	# 	return 1
 	return 0
 def compareEntry(a,b):
 	r=compareVersion(a.version,b.version)
@@ -158,8 +159,8 @@ class EntryMap:
 		#print(" "+entry.name)
 		#for r in res:
 			#print("  "+r[0].fullName)
-		if len(res)<=1 or mustInstalled is True:
-			return res
+		if len(res)==0:
+			return []
 		name_versionEntry=dict()
 		for r in res:
 			name=r.fullName
@@ -168,11 +169,15 @@ class EntryMap:
 			else:
 				if compareEntry(name_versionEntry[name][0],r.getSelfEntry())==-1:
 					name_versionEntry[name]=(r.getSelfEntry(),r)
-		if len(name_versionEntry)==1:
+		if len(name_versionEntry)<=1:
 			return [name_versionEntry[res[0].fullName][1]]
+		if packageName in name_versionEntry:
+			return []
+		if mustInstalled is True:
+			return res
 		if requireName in name_versionEntry:
 			return [name_versionEntry[requireName][1]]
-		log.warning("failed to decide require package for: "+entry.name+" in pacakge: "+packageName)
+		log.warning("failed to decide require package for: "+requireName+" in pacakge: "+packageName)
 		for r1 in res:
 			log.info(" one of provider is: "+r1.fullName)
 		log.info(" select: "+name_versionEntry[res[0].fullName][1].fullName)
@@ -216,6 +221,10 @@ class Counter:
 class SpecificPackage:
 	def __init__(self,packageInfo:PackageInfo,fullName:str,provides:list,requires:list,arch:str,status="uninstalled",repoURL=None,fileName=""):
 		provides.append(PackageEntry(fullName,"EQ",packageInfo.version,packageInfo.release))
+		# if fullName=='indent':
+		# 	for r in requires:
+		# 		print(r.dump())
+		# 	print(traceback.format_stack())
 		self.packageInfo=packageInfo
 		self.fullName=fullName
 		self.providesInfo=provides
@@ -256,6 +265,12 @@ class SpecificPackage:
 		solvedRequire=set()
 		for requireName,requireList in requires.items():
 			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
+			# if self.fullName=="indent":
+			# 	print("-----")
+			# 	print(requireName)
+			# 	for r in res:
+			# 		r.dump()
+			# 	print("--")
 			for r in res:
 				if r not in requirePackageSet:
 					self.addRequirePointer(r)
@@ -267,6 +282,11 @@ class SpecificPackage:
 		for requireName,requireList in requires.items():
 			if requireName in solvedRequire:
 				continue
+			# if self.fullName=="indent":
+			# 	print("-----")
+			# 	print(requireName)
+			# 	for r in res:
+			# 		r.dump()
 			res=entryMap.queryRequires(self.fullName,requireName,requireList,False)
 			for r in res:
 				if r not in requirePackageSet:

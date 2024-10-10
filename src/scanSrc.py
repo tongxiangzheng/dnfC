@@ -2,7 +2,6 @@ import os
 import SourcesListManager
 import RepoFileManager
 import PackageInfo
-import os
 from subprocess import PIPE, Popen
 import SpecificPackage
 import PackageInfo
@@ -11,6 +10,7 @@ import shutil
 import requests
 import loadConfig
 import osInfo
+import io
 from spdx.srcmain import srcmain
 from loguru import logger as log
 DIR = os.path.split(os.path.abspath(__file__))[0]
@@ -119,8 +119,10 @@ def getSrcPackageInfo(srcPath):
 	buildInfo=queryBuildInfo(srcPath,osInfo.OSName,osInfo.OSDist,osInfo.arch,dnfConfigure)
 	if buildInfo is None:
 		return None
-	return parseBuildInfo(buildInfo)
-
+	packages=RepoFileManager.parseRPMFiles(buildInfo,osInfo.OSName,osInfo.OSDist,None)
+	for p in packages:
+		p.status="willInstalled"
+	return packages
 def readStr(f):
 	res=""
 	while True:
@@ -135,46 +137,50 @@ def readStr(f):
 		res=res+c
 	return res
 def parseRequires(PackageName)->list:
-    with os.popen("rpm -q --requires "+PackageName) as f:
-        data=f.readlines()
-        return RepoFileManager.parseRPMItemInfo(data)
+	p = Popen("rpm -q --provides '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = p.communicate()
+	data=stdout.decode().split('\n')
+	return RepoFileManager.parseRPMItemInfo(data)
 def parseProvides(PackageName)->list:
-    with os.popen("rpm -q --provides "+PackageName) as f:
-        data=f.readlines()
-        return RepoFileManager.parseRPMItemInfo(data)
+	p = Popen("rpm -q --provides '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = p.communicate()
+	data=stdout.decode().split('\n')
+	return RepoFileManager.parseRPMItemInfo(data)
 def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesListManager):
 	res=list()
-	with os.popen("/usr/bin/dnf list --installed") as f:
-		readStr(f)
-		readStr(f)		#ignore [Installed,Packages]
-		while True:
-			name_arch=readStr(f)
-			if name_arch=="":
-				break
-			fullName=name_arch.split('.')[0]
-			arch=name_arch.split('.')[-1]
-			if len(name_arch.split('.'))!=2:
-				raise Exception("unexpected format")
-			version_release=readStr(f).split(':')[-1]
-			version=version_release.rsplit('-',1)[0]
-			release=None
-			if len(version_release.rsplit('-',1))>1:
-				release=version_release.rsplit('-',1)[1]
-				dist=release.rsplit('.',1)[1]
-			else:
-				raise Exception("unexpected format")
-			channel=readStr(f)[1:]
-			#if channel=="system":
-			#	continue
-			#print(osType,dist,name,version,release)
-			package=sourcesListManager.getSpecificPackage(fullName,channel,version,release,arch)
-			if package is not None:
-				package.status="installed"
-			else:
-				packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,fullName,version,release,arch)
-				provides=parseProvides(fullName)
-				requires=parseRequires(fullName)
-				res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,"installed"))
+	p = Popen("/usr/bin/dnf list --installed", shell=True, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = p.communicate()
+	f=io.StringIO(stdout.decode())
+	readStr(f)
+	readStr(f)		#ignore [Installed,Packages]
+	while True:
+		name_arch=readStr(f)
+		if name_arch=="":
+			break
+		fullName=name_arch.split('.')[0]
+		arch=name_arch.split('.')[-1]
+		if len(name_arch.split('.'))!=2:
+			raise Exception("unexpected format")
+		version_release=readStr(f).split(':')[-1]
+		version=version_release.rsplit('-',1)[0]
+		release=None
+		if len(version_release.rsplit('-',1))>1:
+			release=version_release.rsplit('-',1)[1]
+			dist=release.rsplit('.',1)[1]
+		else:
+			raise Exception("unexpected format")
+		channel=readStr(f)[1:]
+		#if channel=="system":
+		#	continue
+		#print(osType,dist,name,version,release)
+		package=sourcesListManager.getSpecificPackage(fullName,channel,version,release,arch)
+		if package is not None:
+			package.status="installed"
+		else:
+			packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,fullName,version,release,arch)
+			provides=parseProvides(fullName)
+			requires=parseRequires(fullName)
+			res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,"installed"))
 	return res
 
 def scansrc(args):
