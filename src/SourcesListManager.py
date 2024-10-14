@@ -3,7 +3,6 @@ import RepoFileManager
 import SpecificPackage
 import xml.dom.minidom
 import osInfo
-from loguru import logger as log
 
 class SourceConfigItem:
 	def __init__(self,dist,primaryFilePath,repoURL):
@@ -15,11 +14,6 @@ class SourceConfigItem:
 	def getRepoFileManager(self):
 		if self.repoFileManager is None:
 			self.repoFileManager=RepoFileManager.RepoFileManager(self.primaryFilePath,osInfo.OSName,self.dist,self.repoURL)
-	def getGitLink(self,name,arch):
-		#abandon
-		log.warning("abandon")
-		self.getRepoFileManager()
-		return self.repoFileManager.getGitLink(name)
 	def getSpecificPackage(self,name,version,release,arch)->SpecificPackage.SpecificPackage:
 		self.getRepoFileManager()
 		return self.repoFileManager.queryPackage(name,version,release,arch)

@@ -1,4 +1,21 @@
 import autotest_src
-info="acpid acpid 2.0.34 3.oe2403"
-info=info.split(" ")
-autotest_src.autotest_src(info[0],info[1],info[2],info[3],checkExist=False)
+testName="avahi"
+with open("openEulerinfo.txt") as f:
+	data=f.readlines()
+res=[]
+for info in data:
+	if info.startswith("#"):
+		continue
+	info=info.split(' ')
+	name=info[0].strip()
+	if name!=testName:
+		continue
+	fullName=info[1].strip()
+	version=info[2].strip()
+	if len(info)>3:
+		release=info[3].strip()
+	else:
+		release=None
+	autotest_src.autotest_src(testName,fullName,version,release,checkExist=False)
+	break
+	autotest_binary.autotest_binary(testName,res,checkExist=False)

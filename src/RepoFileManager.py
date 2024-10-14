@@ -4,7 +4,6 @@ import gzip
 import pyzstd
 import PackageInfo
 import SpecificPackage
-from loguru import logger as log
 from collections import defaultdict
 def parseRPMItemInfo(data):
     res=[]
@@ -74,8 +73,9 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 		if subnode.hasAttribute('ver'):
 			version=subnode.getAttribute('ver').strip()
 		else:
-			if flags is not None:
-				log.warning(fullName+" have a package have flags but no version")
+			# if flags is not None:
+			# 	log.warning(fullName+" have a package have flags but no version")
+			pass
 		release=None
 		if subnode.hasAttribute('rel'):
 			release=subnode.getAttribute('rel').strip().split('.')[0]

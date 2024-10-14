@@ -12,7 +12,6 @@ import loadConfig
 import osInfo
 import io
 from spdx.srcmain import srcmain
-from loguru import logger as log
 DIR = os.path.split(os.path.abspath(__file__))[0]
 
 def postFile(file,dnfConfigure:loadConfig.dnfcConfigure):

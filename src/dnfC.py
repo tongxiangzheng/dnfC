@@ -5,7 +5,6 @@ import getNewInstall
 import SourcesListManager
 import nwkTools
 import requests
-from loguru import logger as log
 import normalize
 import json
 import loadConfig

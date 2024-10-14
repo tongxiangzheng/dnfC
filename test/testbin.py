@@ -1,6 +1,6 @@
 import autotest_binary
 
-testName="ORBit2"
+testName="cachefilesd"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]
