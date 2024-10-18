@@ -9,13 +9,8 @@ from loguru import logger as log
 def parseInstallInfo(info:list,sourcesListManager:SourcesListManager.SourcesListManager)->SpecificPackage.SpecificPackage:
 	name=info[0]
 	arch=info[1]
-	version_release=info[2].split('-')
-	version=version_release[0].split(':')[-1]
-	release=None
-	if len(version_release)>1:
-		release=version_release[1]
-	else:
-		print("warning: there is no release info for :"+name+" "+info[2])
+	version_release=info[2]
+	version,release=RepoFileManager.splitVersionRelease(version_release)
 	dist=info[3]
 	specificPackage=sourcesListManager.getSpecificPackage(name,dist,version,release,arch)
 	specificPackage.status="willInstalled"
@@ -83,15 +78,10 @@ def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListMan
 			fullName=name_arch.split('.')[0]
 			arch=name_arch.split('.')[-1]
 			if len(name_arch.split('.'))!=2:
-				raise Exception("unexpected format")
-			version_release=readStr(f).split(':')[-1]
-			version=version_release.rsplit('-',1)[0]
-			release=None
-			if len(version_release.rsplit('-',1))>1:
-				release=version_release.rsplit('-',1)[1]
-				dist=release.rsplit('.',1)[1]
-			else:
-				raise Exception("unexpected format: "+version_release)
+				raise Exception("unexpected format: "+name_arch)
+			version_release=readStr(f)
+			version,release=RepoFileManager.splitVersionRelease(version_release)
+			dist=release.rsplit('.',1)[1]
 			channel=readStr(f)[1:]
 			#print(osType,dist,name,version,release)
 			package=sourcesListManager.getSpecificPackage(fullName,dist,version,release,arch)

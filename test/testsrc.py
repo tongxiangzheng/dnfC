@@ -1,5 +1,5 @@
 import autotest_src
-testName="avahi"
+testName="anaconda"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]
@@ -18,4 +18,3 @@ for info in data:
 		release=None
 	autotest_src.autotest_src(testName,fullName,version,release,checkExist=False)
 	break
-	autotest_binary.autotest_binary(testName,res,checkExist=False)

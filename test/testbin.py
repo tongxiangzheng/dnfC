@@ -1,6 +1,6 @@
 import autotest_binary
 
-testName="cachefilesd"
+testName="anaconda"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]

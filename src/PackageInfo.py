@@ -29,7 +29,7 @@ class PackageInfo:
 		release=""
 		if self.release is not None:
 			release="-"+self.release
-		if self.gitLink is None:
+		if self.gitLink is None: 
 			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)
 		else:
 			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)+"?"+"gitLink="+normalize.normalReplace(self.gitLink)

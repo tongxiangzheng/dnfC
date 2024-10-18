@@ -5,6 +5,14 @@ import pyzstd
 import PackageInfo
 import SpecificPackage
 from collections import defaultdict
+def splitVersionRelease(version_release):
+	version_release=version_release.strip().rsplit('-',1)
+	version=version_release[0]
+	if len(version_release)>1:
+		release=version_release[1]
+	else:
+		release=None
+	return version,release
 def parseRPMItemInfo(data):
     res=[]
     for item in data:
@@ -17,42 +25,31 @@ def parseRPMItemInfo(data):
         if len(parse)>1:
             name=parse[0]
             flags="EQ"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' <= ')
         if len(parse)>1:
             name=parse[0]
             flags="LE"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' < ')
         if len(parse)>1:
             name=parse[0]
             flags="LT"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' >= ')
         if len(parse)>1:
             name=parse[0]
             flags="GE"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' > ')
         if len(parse)>1:
             name=parse[0]
             flags="GT"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         if name is None:
             name=item
         #log.debug(" "+name)
@@ -97,7 +94,7 @@ def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificP
 		return None
 	fullName=childsNode['name'][0].firstChild.nodeValue
 	versionNode=childsNode['version'][0]
-	version=versionNode.getAttribute('ver').strip().split(':')[-1]
+	version=versionNode.getAttribute('ver').strip()
 	sourcerpm=sourceTag.firstChild.nodeValue
 	name=sourcerpm.split('-'+version)[0]
 	release=versionNode.getAttribute('rel').strip()
@@ -110,6 +107,9 @@ def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificP
 	res=formatChilds['rpm:requires']
 	if len(res)!=0:
 		requires=parseEntry(res[0],fullName,'requires')
+	res=formatChilds['rpm:recommends']
+	if len(res)!=0:
+		requires.extend(parseEntry(res[0],fullName,'requires'))
 	filePath=childsNode['location'][0].getAttribute('href').strip()
 	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
 	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)

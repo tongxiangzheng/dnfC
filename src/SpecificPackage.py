@@ -70,6 +70,8 @@ class PackageEntry:
 	def __init__(self,name:str,flags:str,version:str,release:str):
 		self.name=name
 		self.flags=flags
+		if version is not None:
+			version=version.split(':')[-1]
 		self.version=version
 		self.release=release
 	def checkMatch(self,dist):
@@ -177,11 +179,11 @@ class EntryMap:
 			return res
 		if requireName in name_versionEntry:
 			return [name_versionEntry[requireName][1]]
-		# log.warning("failed to decide require package for: "+requireName+" in pacakge: "+packageName)
-		# for r1 in res:
-		# 	log.info(" one of provider is: "+r1.fullName)
-		# log.info(" select: "+name_versionEntry[res[-1].fullName][1].fullName)
-		return [name_versionEntry[res[-1].fullName][1]]
+		log.warning("failed to decide require package for: "+requireName+" in pacakge: "+packageName)
+		for r1 in res:
+			log.info(" one of provider is: "+r1.fullName)
+		log.info(" select: "+name_versionEntry[res[0].fullName][1].fullName)
+		return [name_versionEntry[res[0].fullName][1]]
 
 debugMode=False
 
@@ -193,7 +195,10 @@ def getDependes_dfs(package,dependesSet:set,entryMap,includeInstalled):
 	if package.status=='uninstalled':
 		package.status='willInstalled'
 	dependesSet.add(package)
-	package.findRequires(entryMap)
+	tag=1
+	if includeInstalled is True:
+		tag=2
+	package.findRequires(entryMap,tag)
 	if debugMode is True and includeInstalled is True:
 		print("%"+package.fullName,package.packageInfo.version,package.packageInfo.release,package.status)
 		print("%",end="")
@@ -231,31 +236,30 @@ class SpecificPackage:
 		self.requiresInfo=requires
 		self.status=status
 		self.arch=arch
-		self.providesPointers=[]
+		#self.providesPointers=[] # need not this feature
 		self.requirePointers=[]
 		self.repoURL=repoURL
 		self.fileName=fileName
 		self.getGitLinked=False
 		self.registerProvided=False
-		self.haveFoundRequires=False
-	def addProvidesPointer(self,package):
-		#无需手动调用，addRequirePointer自动处理
-		self.providesPointers.append(package)
+		self.foundRequiresTag=0
+	# def addProvidesPointer(self,package):
+	# 	#无需手动调用，addRequirePointer自动处理
+	# 	self.providesPointers.append(package)
 	def addRequirePointer(self,package):
 		self.requirePointers.append(package)
-		package.addProvidesPointer(self)
+		#package.addProvidesPointer(self)
 	def registerProvides(self,entryMap:EntryMap)->None:
 		if self.registerProvided is True:
 			return
 		self.registerProvided=True
 		for provide in self.providesInfo:
 			entryMap.registerEntry(provide,self)
-	def getSelfEntry(self):
-		return self.providesInfo[-1]
-	def findRequires(self,entryMap:EntryMap)->None:
-		if self.haveFoundRequires is True:
+	def findRequires(self,entryMap:EntryMap,tag:int)->None:
+		if self.foundRequiresTag==tag:
 			return
-		self.haveFoundRequires=True
+		self.foundRequiresTag=tag
+		self.clearRequires()
 		requirePackageSet=set()
 		requires=dict()
 		for require in self.requiresInfo:
@@ -294,11 +298,16 @@ class SpecificPackage:
 					requirePackageSet.add(r)
 			if len(res)>0:
 				solvedRequire.add(requireName)
+	def clearRequires(self):
+		self.haveFoundRequires=False
+		self.requirePointers=[]
 	def dump(self):
 		print(self.fullName,self.packageInfo.version,self.packageInfo.release,self.status)
 		for p in self.requirePointers:
 			print(" "+p.fullName,end="")
 		print("")
+	def getSelfEntry(self):
+		return self.providesInfo[-1]
 	def getNameVersion(self):
 		res=self.fullName+"-"+self.packageInfo.version
 		if self.packageInfo.release is not None:
