@@ -111,6 +111,9 @@ def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificP
 	if len(res)!=0:
 		requires.extend(parseEntry(res[0],fullName,'requires'))
 	filePath=childsNode['location'][0].getAttribute('href').strip()
+	# if fullName.endswith("-fonts"):
+	# 	print(repoURL)
+	# 	print(fullName)
 	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
 	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
 

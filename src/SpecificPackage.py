@@ -140,7 +140,7 @@ class EntryMap:
 		self.provideEntryPackages=defaultdict(defaultNoneList)
 	def registerEntry(self,entry:PackageEntry,package):
 		self.provideEntryPackages[entry.name].append((package,entry))
-	def queryRequires(self,packageName,requireName:str,entrys:list,mustInstalled:bool):
+	def queryRequires(self,packageName,requireName:str,entrys:list,mustInstalled:bool,tag:int):
 		# requireName==entrys[i].name
 		infoList=self.provideEntryPackages[requireName]
 		res=[]
@@ -179,6 +179,8 @@ class EntryMap:
 			return res
 		if requireName in name_versionEntry:
 			return [name_versionEntry[requireName][1]]
+		if tag==1:
+			return []
 		log.warning("failed to decide require package for: "+requireName+" in pacakge: "+packageName)
 		for r1 in res:
 			log.info(" one of provider is: "+r1.fullName)
@@ -268,7 +270,7 @@ class SpecificPackage:
 			requires[require.name].append(require)
 		solvedRequire=set()
 		for requireName,requireList in requires.items():
-			res=entryMap.queryRequires(self.fullName,requireName,requireList,True)
+			res=entryMap.queryRequires(self.fullName,requireName,requireList,True,tag)
 			# if self.fullName=="indent":
 			# 	print("-----")
 			# 	print(requireName)
@@ -291,7 +293,7 @@ class SpecificPackage:
 			# 	print(requireName)
 			# 	for r in res:
 			# 		r.dump()
-			res=entryMap.queryRequires(self.fullName,requireName,requireList,False)
+			res=entryMap.queryRequires(self.fullName,requireName,requireList,False,tag)
 			for r in res:
 				if r not in requirePackageSet:
 					self.addRequirePointer(r)

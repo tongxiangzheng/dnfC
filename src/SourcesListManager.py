@@ -133,7 +133,6 @@ class SourcesListManager:
 						sourceURL=sourceURL.replace('$arch',self.arch)
 						sourceURL=sourceURL.replace('$basearch',self.basearch)
 						self.rpmURL[dist]=sourceURL
-					
 		sourcesd='/var/cache/dnf/'
 		for file in os.listdir(sourcesd):
 			distPath=os.path.join(sourcesd, file)
@@ -143,6 +142,8 @@ class SourcesListManager:
 				primaryFilePath=getPrimaryFilePath(repoPath)
 				if primaryFilePath is not None:
 					self.binaryConfigItems[dist]=[SourceConfigItem(dist,primaryFilePath,self.rpmURL[dist])]
+		self.distList=list(self.binaryConfigItems.keys())
+		self.distList.sort(reverse=True)
 		
 		
 
@@ -150,7 +151,8 @@ class SourcesListManager:
 	def getSpecificPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:
 		if dist not in self.binaryConfigItems:
 			#dist may be system or OS
-			for configItemList in self.binaryConfigItems.values():
+			for dist in self.distList:
+				configItemList=self.binaryConfigItems[dist]
 				for configItem in configItemList:
 					specificPackage=configItem.getSpecificPackage(name,version,release,arch)
 					if specificPackage is not None:
@@ -163,8 +165,9 @@ class SourcesListManager:
 		return None
 	def getAllPackages(self):
 		res=[]
-		for dist,binaryConfigItem in self.binaryConfigItems.items():
-			for configItem in binaryConfigItem:
+		for dist in self.distList:
+			configItemList=self.binaryConfigItems[dist]
+			for configItem in configItemList:
 				res.extend(configItem.getAllPackages())
 		return res
 	#def getSpecificSrcPackage(self,name,dist,version,release,arch)->SpecificPackage.SpecificPackage:

@@ -70,13 +70,13 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 		packageFilePath=downloadPackage(selectedPackage)
 		if dumpFileOnly is True:
 			if genSpdx is True:
-				spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+				spdxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'spdx',saveSpdxPath)
 			if genCyclonedx is True:
-				cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
+				cyclonedxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 			continue
-		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+		spdxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'spdx',saveSpdxPath)
 		if genCyclonedx is True:
-			cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
+			cyclonedxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 		cves=queryCVE(spdxObj,dnfConfigure)

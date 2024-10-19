@@ -1,5 +1,5 @@
 import autotest_src
-testName="anaconda"
+testName="cracklib"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]

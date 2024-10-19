@@ -95,13 +95,15 @@ def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListMan
 	
 def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,includeInstalled=False)->dict:
 	cmd="/usr/bin/dnf install --assumeno"
-	argset=set(args)
+	packages=[]
 	for arg in args:
 		if '(' in arg or ')' in arg:
 			cmd+=" '"+arg+"'"
 		else:
 			cmd+=' '+arg
-	installPackages=[]
+		if not arg.startswith('-'):
+			packages.append(arg)
+	willInstallPackages=[]
 	#log.info('cmd is '+cmd)
 	#actualPackageName=packageName
 	installInfoSection=False
@@ -132,19 +134,38 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 				i+=1
 				info.extend(data[i].strip().split())
 			package=parseInstallInfo(info,sourcesListManager)
-			installPackages.append(package)
+			willInstallPackages.append(package)
 			if inSelectSection is True:
 				selectedPackages.append(package)
 		elif info.startswith('Installing:'):
 			installInfoSection=True
 	entryMap=SpecificPackage.EntryMap()
-	for p in installPackages:
+	for p in willInstallPackages:
 		p.registerProvides(entryMap)
 	if includeInstalled is True:
 		installedPackages=getInstalledPackageInfo(sourcesListManager)
 		for p in installedPackages:
 			p.registerProvides(entryMap)
-	
+		for packageName in packages:
+			selectedPackage=None
+			for p in selectedPackages:
+				if p.fullName==packageName or p.getNameVersion()==packageName:
+					selectedPackage=p
+					break
+			if selectedPackage is not None:
+				continue
+			for p in installedPackages:
+				if p.fullName==packageName or p.getNameVersion()==packageName:
+					selectedPackage=p
+					break
+				for provide in p.providesInfo:
+					if provide.name==packageName:
+						selectedPackage=p
+						break
+				if selectedPackage is not None:
+					break
+			if selectedPackage is not None:
+				selectedPackages.append(selectedPackage)
 	res=dict()
 	for p in selectedPackages:
 		depends=SpecificPackage.getDependsPrepare(entryMap,p)

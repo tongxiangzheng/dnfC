@@ -23,6 +23,7 @@ def autotest_src(name,fullname,version,release,checkExist=True):
 	if not os.path.isfile(srcFile):
 		p = Popen("wget "+srcLink, shell=True, stdout=PIPE, stderr=PIPE,cwd="./source")
 		stdout, stderr = p.communicate()
+		#os.system("wget "+srcLink)
 	
 	if not os.path.isfile(srcFile):
 		print("error: no src file")
