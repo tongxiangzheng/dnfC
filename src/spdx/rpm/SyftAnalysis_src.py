@@ -8,7 +8,7 @@ from collections import defaultdict
 import numpy as np
 import requests
 import json
-
+import shutil
 from spdx.Utils.convertSbom import convertSpdx,convertCyclonedx
 from spdx.Utils.extract import decompress
 from spdx.Utils.java.mavenAnalysis import AnalysisVariabele
@@ -38,11 +38,13 @@ def preProcess(src_rpm_path):
     #创建一个文件夹放置解压后的文件
     tgzFilepath = src_rpm_path+'.tgz'
     dir_Path = re.sub(r'\.rpm$','',src_rpm_path)
-    mkdir_command = f'mkdir {dir_Path}'
-    os.system(mkdir_command)
+    if os.path.exists(dir_Path):
+        shutil.rmtree(dir_Path)
+    os.makedirs(dir_Path)
     #解压tgz文件
     unpack_command = f'tar -zxvf {tgzFilepath} -C {dir_Path}'
-    os.system(unpack_command)
+    p = subprocess.Popen(unpack_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
 
 
     #找到关键压缩包，解压后，得到解压后的文件夹
@@ -53,7 +55,7 @@ def preProcess(src_rpm_path):
                     '.gz') or file.endswith('.bz2'):
                 #获取压缩包完整路径
                 zip_path = os.path.join(root,file)
-                print("处理压缩包",zip_path)
+                #print("处理压缩包",zip_path)
                 #解压压缩包
                 key_dir_path = extract_archive(zip_path,dir_Path)
     return dir_Path,key_dir_path
@@ -81,7 +83,8 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path,ExternalDependencies,sbomTy
     matrix = np.zeros((1024, 1024))
     # 生成syft普通json
     command_syft = f"{syft_path11} scan  {scan_path} -o json"
-    syft_output = subprocess.check_output(command_syft, shell=True)
+    p = subprocess.Popen(command_syft, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    syft_output, stderr = p.communicate()
     syft_json = json.loads(syft_output.decode())
 
     artifacts = syft_json['artifacts']

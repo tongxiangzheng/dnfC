@@ -15,16 +15,18 @@ class ExternalDependency:
 		# self.gitLink = gitLink
 		
 def srcmain(packageName,packageFilePath,dependsList,sbomType='spdx',saveSbomPath='/tmp/dnfC/src'):
-	print("binary rpm file at: "+packageFilePath)
-	print("depends for: "+packageName)
-	for depends in dependsList:
-		print(depends)
+	# print("source rpm file at: "+packageFilePath)
+	# print("depends for: "+packageName)
+	# for depends in dependsList:
+	# 	print(depends)
 	ExternalDependencies=getExternalDependencies(dependsList)
 	# resPath=packageFilePath+".spdx.json"
+	if saveSbomPath is None:
+		saveSbomPath='/tmp/dnfC/src'
 	if sbomType == 'spdx':
-		resPath = saveSbomPath+packageName+".spdx.json"
+		resPath = os.path.join(saveSbomPath,packageName+".spdx.json")
 	if sbomType == 'cyclonedx':
-		resPath = saveSbomPath+packageName+".cyclonedx.json"
+		resPath = os.path.join(saveSbomPath,packageName+".cyclonedx.json")
 	SyftAnalysis_src.scan_rpm_src(packageFilePath,resPath,ExternalDependencies,sbomType)
 	return resPath
 #获取外部依赖
@@ -32,7 +34,7 @@ def getExternalDependencies(dependsList):
 	
 	ExternalDependencies = []
 	
-	print("解析")
+	# print("解析")
 	
 	for depends in dependsList:
 		name = depends['name']
@@ -49,9 +51,9 @@ def getExternalDependencies(dependsList):
 		)
 		ExternalDependencies.append(Dependency)
 		#print("require:",require)
-		print("name:",name)
-		print("version",version)
-		print("purl",purl)
+		# print("name:",name)
+		# print("version",version)
+		# print("purl",purl)
 		#print('gitLink',gitLink)
 
 	return ExternalDependencies

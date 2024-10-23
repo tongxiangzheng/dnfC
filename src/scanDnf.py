@@ -14,7 +14,7 @@ def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
 
 def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
-	url=dnfConfigure.serverURL
+	url=dnfConfigure.querycveURL
 	try:
 		response = requests.post(url, json=spdxObj)
 	except requests.exceptions.ConnectionError as e:
@@ -29,17 +29,28 @@ def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
 		return {}
 def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedxPath=None,dumpFileOnly=False):
 	assumeNo=False
+	dnfArgs=[]
 	for option in args:
 		if option=='--assumeno':
 			assumeNo=True
-		if option.startswith('--genspdx'):
+		elif option.startswith('--genspdx'):
 			genSpdx=True
+			if len(option.split('=',1))==1:
+				print("usage: --genspdx=/path/to/save")
+				return False
 			saveSpdxPath=option.split('=',1)[1]
-		if option.startswith('--gencyclonedx'):
+		elif option.startswith('--gencyclonedx'):
 			genCyclonedx=True
+			if len(option.split('=',1))==1:
+				print("usage: --gencyclonedx=/path/to/save")
+				return False
 			saveCyclonedxPath=option.split('=',1)[1]
+		elif option=="install":
+			pass
+		else:
+			dnfArgs.append(option)
 	sourcesListManager=SourcesListManager.SourcesListManager()
-	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(args,sourcesListManager,dumpFileOnly)
+	selectedPackages_willInstallPackages=getNewInstall.getNewInstall(dnfArgs,sourcesListManager,dumpFileOnly)
 	if len(selectedPackages_willInstallPackages)==0:
 		return True
 	dnfConfigure=loadConfig.loadConfig()
@@ -59,13 +70,13 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 		packageFilePath=downloadPackage(selectedPackage)
 		if dumpFileOnly is True:
 			if genSpdx is True:
-				spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+				spdxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'spdx',saveSpdxPath)
 			if genCyclonedx is True:
-				cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
+				cyclonedxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 			continue
-		spdxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'spdx',saveSpdxPath)
+		spdxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'spdx',saveSpdxPath)
 		if genCyclonedx is True:
-			cyclonedxPath=spdxmain(selectedPackageName,packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
+			cyclonedxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 		cves=queryCVE(spdxObj,dnfConfigure)

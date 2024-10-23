@@ -3,23 +3,24 @@ import re
 import subprocess
 import json
 import pyrpm
-
+import shutil
 from spdx.Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM,convertCyclonedx
 syft_path = '/usr/share/dnfC/spdx/syft/syft'
 syft_path11 = '/usr/share/dnfC/spdx/syft11/syft'
 #对rpm的二进制包进行预处理，得到相关路径
 def preProcess(rpm_path):
     #将rpm包转换成tgz压缩包
-    rpm_command = f'rpm2archive {rpm_path}'
-    os.system(rpm_command)
+    p = subprocess.Popen(f'rpm2archive {rpm_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    syft_output, stderr = p.communicate()
     # 创建一个文件夹放置解压后的文件
     tgzFilepath = rpm_path + '.tgz'
     dir_Path = re.sub(r'\.rpm$', '', rpm_path)
-    mkdir_command = f'mkdir {dir_Path}'
-    os.system(mkdir_command)
+    if os.path.exists(dir_Path):
+        shutil.rmtree(dir_Path)
+    os.makedirs(dir_Path)
     # 解压tgz文件
-    unpack_command = f'tar -zxvf {tgzFilepath} -C {dir_Path}'
-    os.system(unpack_command)
+    p = subprocess.Popen(f'tar -zxvf {tgzFilepath} -C {dir_Path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    syft_output, stderr = p.communicate()
     return  dir_Path
 # class ExternalDependency:
 #     name:str
@@ -92,7 +93,8 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies,sbomType):
     project_name = dir_Path
     # 生成syft普通json
     command_syft = f"{syft_path11} scan  {dir_Path} -o json"
-    syft_output = subprocess.check_output(command_syft, shell=True)
+    p = subprocess.Popen(command_syft, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    syft_output, stderr = p.communicate()
     syft_json = json.loads(syft_output.decode())
     tempath = scan_path + '-syft.json'
     with open(tempath, "w") as f:
@@ -102,7 +104,7 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies,sbomType):
     # convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
         convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
     if sbomType == 'cyclonedx':
-        convertCyclonedx(syft_json,project_name,output_file,ExterDependencies)
+        convertCyclonedx(syft_json,project_name,output_file,ExternalDependencies)
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
 # scan_path = "/home/jiliqiang/RPM/rpm/keepass-2.54-2.mga9.noarch.rpm"
 # output_file = "/home/jiliqiang/RPM/rpm/SBOM/keepass-2.54-2.mga9.noarch.rpm.spdx.json"

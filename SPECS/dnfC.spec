@@ -31,7 +31,7 @@ rm -rf %{buildroot}
 %install
 
 mkdir -p %{buildroot}/usr/sbin
-cp %{_builddir}/%{name}-%{version}/dist/dnfc %{buildroot}/usr/sbin/
+cp %{_builddir}/%{name}-%{version}/dist/dnfc %{buildroot}/usr/sbin/dnf
 mkdir -p %{buildroot}/usr/share/dnfC/spdx/
 cp -r %{_builddir}/%{name}-%{version}/src/spdx/syft11 %{buildroot}/usr/share/dnfC/spdx/
 cp -r %{_builddir}/%{name}-%{version}/src/spdx/syft %{buildroot}/usr/share/dnfC/spdx/

@@ -2,7 +2,17 @@ import os
 import xml.dom.minidom
 import gzip
 import pyzstd
-from SpecificPackage import *
+import PackageInfo
+import SpecificPackage
+from collections import defaultdict
+def splitVersionRelease(version_release):
+	version_release=version_release.strip().rsplit('-',1)
+	version=version_release[0]
+	if len(version_release)>1:
+		release=version_release[1]
+	else:
+		release=None
+	return version,release
 def parseRPMItemInfo(data):
     res=[]
     for item in data:
@@ -15,46 +25,35 @@ def parseRPMItemInfo(data):
         if len(parse)>1:
             name=parse[0]
             flags="EQ"
-            p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' <= ')
         if len(parse)>1:
             name=parse[0]
             flags="LE"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' < ')
         if len(parse)>1:
             name=parse[0]
             flags="LT"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' >= ')
         if len(parse)>1:
             name=parse[0]
             flags="GE"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         parse=item.split(' > ')
         if len(parse)>1:
             name=parse[0]
             flags="GT"
             p2=parse[1].split('-')
-            version=p2[0]
-            if len(p2)<1:
-                release=p2[1].split('.')[0]
+            version,release=splitVersionRelease(parse[1])
         if name is None:
             name=item
         #log.debug(" "+name)
-        res.append(PackageEntry(name,flags,version,release))
+        res.append(SpecificPackage.PackageEntry(name,flags,version,release))
     return res
 def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 	#fullName just for debug info, can be empty string
@@ -63,44 +62,60 @@ def parseEntry(node:xml.dom.minidom.Element,fullName:str,type:str)->list:
 	for subnode in nodelist:
 		if subnode.nodeType==xml.dom.Node.TEXT_NODE:
 			continue
-		name=subnode.getAttribute('name')
+		name=subnode.getAttribute('name').strip()
 		flags=None
 		if subnode.hasAttribute('flags'):
-			flags=subnode.getAttribute('flags')
+			flags=subnode.getAttribute('flags').strip()
 		version=None
 		if subnode.hasAttribute('ver'):
-			version=subnode.getAttribute('ver')
+			version=subnode.getAttribute('ver').strip()
 		else:
-			if flags is not None:
-				log.warning(fullName+" have a package have flags but no version")
+			# if flags is not None:
+			# 	log.warning(fullName+" have a package have flags but no version")
+			pass
 		release=None
 		if subnode.hasAttribute('rel'):
-			release=subnode.getAttribute('rel').split('.')[0]
-		res.append(PackageEntry(name,flags,version,release))
+			release=subnode.getAttribute('rel').strip().split('.')[0]
+		res.append(SpecificPackage.PackageEntry(name,flags,version,release))
 	return res
-def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage:
-	fullName=node.getElementsByTagName('name')[0].firstChild.nodeValue
-	versionNode=node.getElementsByTagName('version')[0]
-	version=versionNode.getAttribute('ver').split(':')[-1]
-	sourceTag=node.getElementsByTagName('rpm:sourcerpm')
-	if sourceTag[0].firstChild is not None:
-		sourcerpm=sourceTag[0].firstChild.nodeValue
-		name=sourcerpm.split('-'+version)[0]
-	else:
-		name=fullName
-	release=versionNode.getAttribute('rel')
-	arch=node.getElementsByTagName('arch')[0].firstChild.nodeValue
+def sub2dict(node):
+    subDict=defaultdict(SpecificPackage.defaultNoneList)
+    nodelist=node.childNodes
+    for subnode in nodelist:
+        name=subnode.nodeName
+        subDict[name].append(subnode)
+    return subDict
+def parseRPMPackage(node:xml.dom.minidom.Element,osType,dist,repoURL)->SpecificPackage.SpecificPackage:
+	childsNode=sub2dict(node)
+	packageFormat=childsNode['format'][0]
+	formatChilds=sub2dict(packageFormat)
+	sourceTag=formatChilds['rpm:sourcerpm'][0]
+	if sourceTag.firstChild is None:
+		return None
+	fullName=childsNode['name'][0].firstChild.nodeValue
+	versionNode=childsNode['version'][0]
+	version=versionNode.getAttribute('ver').strip()
+	sourcerpm=sourceTag.firstChild.nodeValue
+	name=sourcerpm.split('-'+version)[0]
+	release=versionNode.getAttribute('rel').strip()
+	arch=childsNode['arch'][0].firstChild.nodeValue
 	provides=[]
-	res=node.getElementsByTagName('rpm:provides')
+	res=formatChilds['rpm:provides']
 	if len(res)!=0:
 		provides=parseEntry(res[0],fullName,'provides')
 	requires=[]
-	res=node.getElementsByTagName('rpm:requires')
+	res=formatChilds['rpm:requires']
 	if len(res)!=0:
 		requires=parseEntry(res[0],fullName,'requires')
-	filePath=node.getElementsByTagName('location')[0].getAttribute('href')
-	packageInfo=PackageInfo(osType,dist,name,version,release,arch)
-	return SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
+	res=formatChilds['rpm:recommends']
+	if len(res)!=0:
+		requires.extend(parseEntry(res[0],fullName,'requires'))
+	filePath=childsNode['location'][0].getAttribute('href').strip()
+	# if fullName.endswith("-fonts"):
+	# 	print(repoURL)
+	# 	print(fullName)
+	packageInfo=PackageInfo.PackageInfo(osType,dist,name,version,release,arch)
+	return SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,repoURL=repoURL,fileName=filePath)
 
 def parseRPMFiles(repodata,osType,dist,repoURL):
 	#entryMap=EntryMap()
@@ -112,15 +127,15 @@ def parseRPMFiles(repodata,osType,dist,repoURL):
 		if subnode.nodeType==xml.dom.Node.TEXT_NODE:
 			continue
 		package=parseRPMPackage(subnode,osType,dist,repoURL)
-		#package.registerProvides(entryMap)
-		res.append(package)
+		if package is not None:
+			res.append(package)
 	return res
 
 
 class RepoFileManager:
 	def __init__(self,repoPath,osType,dist,repoURL):
 		self.repoPath=repoPath
-		self.packageMap=defaultdict(defaultNoneList)
+		self.packageMap=SpecificPackage.defaultdict(SpecificPackage.defaultNoneList)
 		if repoPath.endswith('.gz'):
 			with gzip.open(repoPath,"rb") as f:
 				data=f.read()
@@ -128,22 +143,25 @@ class RepoFileManager:
 			with open(repoPath, "rb") as f:
 				data = f.read()
 				data = pyzstd.decompress(data)
-		packages=parseRPMFiles(data,osType,dist,repoURL)
-		for package in packages:
+		else:
+			print("warning: cannot extract file "+repoPath)
+		self.packages=parseRPMFiles(data,osType,dist,repoURL)
+		for package in self.packages:
 			self.packageMap[package.fullName].append(package)
 	def queryPackage(self,name,version,release,arch):
 		#print("\nquery:")
 		#print(name,version,release,arch)
+		if "." not in release:
+			raise Exception("version have no '.' : "+release)
+		e=SpecificPackage.PackageEntry(name,"EQ",version,release)
 		if name in self.packageMap:
 			for specificPackage in self.packageMap[name]:
 				#print(specificPackage.packageInfo.version,specificPackage.packageInfo.release,specificPackage.packageInfo.arch)
-				if specificPackage.packageInfo.version==version and specificPackage.packageInfo.release==release and specificPackage.packageInfo.arch==arch:
-					return specificPackage
+				if SpecificPackage.compareEntry(specificPackage.getSelfEntry(),e)==0:
+					if specificPackage.packageInfo.arch==arch:
+							return specificPackage
 			return None
 	def getAllPackages(self):
-		res=[]
-		for packageList in self.packageMap.values():
-			res.extend(packageList)
-		return res
+		return self.packages
 		
 	

@@ -2,14 +2,19 @@ import json
 import os
 class dnfcConfigure:
 	def __init__(self,configObj):
-		self.serverURL=configObj['server']['url']
-
+		self.querycveURL=configObj['server']['querycve']
+		self.postfileURL=configObj['server']['postfile']
+		self.querybuildinfoURL=configObj['server']['querybuildinfo']
 
 def checkConfig(configObj)->bool:
 	if 'server' not in configObj:
 		return False
 	server=configObj['server']
-	if 'url' not in server:
+	if 'querycve' not in server:
+		return False
+	if 'postfile' not in server:
+		return False
+	if 'querybuildinfo' not in server:
 		return False
 	return True
 def loadConfig():
