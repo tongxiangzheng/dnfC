@@ -1,17 +1,9 @@
 import sys
 import os
 DIR = os.path.split(os.path.abspath(__file__))[0]
-import getNewInstall
-import SourcesListManager
-import nwkTools
-import requests
-import normalize
-import json
-import loadConfig
-from spdx.spdxmain import spdxmain
+import scanBin
 import scanSrc
 import scanDnf
-#from spdx.spdxmain import spdxmain
 
 
 def runDnf(args,setyes=False):
@@ -53,8 +45,10 @@ def user_main(args, exit_code=False):
 				return 1
 			scanDnf.scanDnf(args[1:-1],genSpdx=False,saveSpdxPath=None,genCyclonedx=True,saveCyclonedxPath=args[-1],dumpFileOnly=True)
 			return 0
+		elif args[0]=='scanbin':
+			errcode=scanBin.scanBin(args[1:])
 		elif args[0]=='scansrc':
-			errcode=scanSrc.scansrc(args[1:])
+			errcode=scanSrc.scanSrc(args[1:])
 	if errcode is None:
 		errcode=runDnf(args)
 

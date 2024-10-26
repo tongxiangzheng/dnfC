@@ -58,57 +58,7 @@ def queryBuildInfo(srcFile,osType,osDist,arch,dnfConfigure:loadConfig.dnfcConfig
 	else:
 		print(f'failed to query buildInfo: Request failed with status code {response.status_code}')
 		return None
-def parseRPMInfo(data):
-	rpmhdr={}
-	for item in data:
-		pair=item.split(":",1)
-		if len(pair)==2:
-			pair[0]=pair[0].strip()
-			pair[1]=pair[1].strip()
-			rpmhdr[pair[0]]=pair[1]
-	fullName=rpmhdr['Name']
-	version=rpmhdr['Version']
-	release=rpmhdr['Release']
-	srcrpmformat="-"+version+"-"+release+".src.rpm"
-	name=rpmhdr['Source RPM'][:-len(srcrpmformat)]
-	return{"name":name,
-		"fullName":fullName,
-		"version":version,
-		"release":release}
-#		"arch":rpmhdr['Architecture']}
-	
-def parseBuildInfo(buildInfo):
-	res=[]
-	type=""
-	packageInfo=[]
-	requireInfo=[]
-	provideInfo=[]
-	for info in buildInfo.split("\n"):
-		info=info.strip()
-		if info=="%package:":
-			type="package"
-		elif info=="%requires:":
-			type="requires"
-		elif info=="%provides:":
-			type="provides"
-		elif info=="%packageEnd":
-			rpmInfo=parseRPMInfo(packageInfo)
-			provides=RepoFileManager.parseRPMItemInfo(provideInfo)
-			requires=RepoFileManager.parseRPMItemInfo(requireInfo)
-			p=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,rpmInfo['name'],rpmInfo['version'],rpmInfo['release'],osInfo.arch)
-			package=SpecificPackage.SpecificPackage(p,rpmInfo['fullName'],provides,requires,osInfo.arch,"willInstalled")
-			res.append(package)
-			packageInfo=[]
-			requireInfo=[]
-			provideInfo=[]
-		else:
-			if type=="package":
-				packageInfo.append(info)
-			elif type=="requires":
-				requireInfo.append(info)
-			elif type=="provides":
-				provideInfo.append(info)
-	return res
+
 
 def getSrcPackageInfo(srcPath):
 	dnfConfigure=loadConfig.loadConfig()
@@ -136,12 +86,12 @@ def readStr(f):
 		res=res+c
 	return res
 def parseRequires(PackageName)->list:
-	p = Popen("rpm -q --provides '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
+	p = Popen("/usr/bin/rpm -qpR '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	data=stdout.decode().split('\n')
 	return RepoFileManager.parseRPMItemInfo(data)
 def parseProvides(PackageName)->list:
-	p = Popen("rpm -q --provides '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
+	p = Popen("/usr/bin/rpm -qpP '"+PackageName+"'", shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	data=stdout.decode().split('\n')
 	return RepoFileManager.parseRPMItemInfo(data)
@@ -177,7 +127,7 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 			res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,"installed"))
 	return res
 
-def scansrc(args):
+def scanSrc(args):
 	srcFile=None
 	genSpdx=False
 	spdxPath='.'
