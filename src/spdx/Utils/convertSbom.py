@@ -190,7 +190,7 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             externPackageRef=ExternalPackageRef(
                 category=ExternalPackageRefCategory.SECURITY,
                 reference_type="cpe23Type",
-                locator=cpe
+                locator=cpe['cpe']
             )
             package.external_references.append(externPackageRef)
         purl = artifact['purl']
@@ -206,11 +206,11 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             reference_type="purl",
             locator=purl
             )
-        externPackageRef=ExternalPackageRef(
-            category=ExternalPackageRefCategory.PACKAGE_MANAGER,
-            reference_type="purl",
-            locator=purl
-        )
+        # externPackageRef=ExternalPackageRef(
+        #     category=ExternalPackageRefCategory.PACKAGE_MANAGER,
+        #     reference_type="purl",
+        #     locator=purl
+        # )
         package.external_references.append(externPackageRef)
         #document.packages.append([package])
         document.packages.append(package)
@@ -435,15 +435,22 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
             externPackageRef = ExternalPackageRef(
                 category=ExternalPackageRefCategory.SECURITY,
                 reference_type="cpe23Type",
-                locator=cpe
+                locator=cpe['cpe']
             )
             package.external_references.append(externPackageRef)
         purl = artifact['purl']
-        externPackageRef = ExternalPackageRef(
+        if purl == "":
+            externPackageRef = ExternalPackageRef(
             category=ExternalPackageRefCategory.PACKAGE_MANAGER,
             reference_type="purl",
-            locator=purl
-        )
+            locator=f'pkg:unknown/unknown/unknown@unknown'
+            )
+        else:
+            externPackageRef = ExternalPackageRef(
+                category=ExternalPackageRefCategory.PACKAGE_MANAGER,
+                reference_type="purl",
+                locator=purl
+            )
         package.external_references.append(externPackageRef)
         # document.packages.append([package])
         document.packages.append(package)

@@ -52,7 +52,7 @@ def preProcess(src_rpm_path):
     for root,dirs,files in os.walk(dir_Path):
         for file in files:
             if file.endswith('.zip') or file.endswith('.rar') or file.endswith('.tar') or file.endswith(
-                    '.gz') or file.endswith('.bz2'):
+                    '.gz') or file.endswith('.bz2') or file.endswith('.xz'):
                 #获取压缩包完整路径
                 zip_path = os.path.join(root,file)
                 #print("处理压缩包",zip_path)
