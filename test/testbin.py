@@ -1,6 +1,6 @@
 import autotest_binary
 
-testName="avahi"
+testName="crash"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]

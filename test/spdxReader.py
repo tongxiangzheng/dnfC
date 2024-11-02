@@ -28,11 +28,9 @@ def parseSpdxObj(spdxObj,duplicate_removal=True):
 			for externalRefs in package['externalRefs']:
 				if externalRefs['referenceCategory']!='PACKAGE_MANAGER':
 					continue
-				purlStr=package['externalRefs'][0]['referenceLocator']
+				purlStr=externalRefs['referenceLocator']
 				purlStr=normalize.reNormalReplace(purlStr)
 				packageinfo=PackageInfo.loadPurl(purlStr)
-				if 'comment' in package:
-					packageinfo.gitLink=package['comment']
 			if packageinfo is not None:
 				if duplicate_removal is True:
 					name=packageinfo.name

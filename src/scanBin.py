@@ -9,6 +9,7 @@ import normalize
 import subprocess
 import osInfo
 import scanSrc
+import shutil
 from spdx.spdxmain import spdxmain
 
 def parseRPMInfo(data):
@@ -45,6 +46,9 @@ def querypackageInfo(filePaths):
 		if not os.path.isfile(filePath):
 			print("cannot open file: "+filePath)
 			return None
+		if not os.path.exists("/tmp/aptC/packages"):
+			os.makedirs("/tmp/aptC/packages")
+		filePath=shutil.copy(filePath,"/tmp/aptC/packages")
 		p = subprocess.Popen(f"/usr/bin/rpm -qpi '{filePath}'", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		stdout, stderr = p.communicate()
 		rpmInfo=parseRPMInfo(stdout.decode().split('\n'))
