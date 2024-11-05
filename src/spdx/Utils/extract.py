@@ -65,7 +65,7 @@ def decompress(source_file, target_dir):
     elif tarfile.is_tarfile(source_file):
         with tarfile.open(source_file, "r") as t:
             t.extractall(target_dir)
-    elif gzip.is_gzip(source_file):
+    elif filename.endswith('.gz'):
         with gzip.open(source_file, "rb") as g:
             with open(os.path.join(target_dir, filename), "wb") as f:
                 f.write(g.read())
