@@ -1,27 +1,20 @@
 import json
 import normalize
 class PackageInfo:
-	def __init__(self,osType:str,dist:str,name:str,version:str,release:str,arch:str,gitLink=None):
+	def __init__(self,osType:str,dist:str,name:str,version:str,release:str,arch:str):
 		self.osType=osType
 		self.dist=dist
 		self.name=name
-		self.gitLink=gitLink
 		self.arch=arch
 		self.version=version
 		self.release=release
-	def dump(self):
-		info={'osType':self.osType,'dist':self.dist,'name':self.name,'version':self.version,'release':self.release}
-		if self.gitLink is not None:
-			info['gitLink']=self.gitLink
-		return json.dumps(info)
+
 	def dumpAsDict(self):
 		release=""
 		if self.release is not None:
 			release="-"+self.release
 		version=self.version+release
 		info={'name':normalize.normalReplace(self.name),'version':normalize.normalReplace(version),'purl':self.dumpAsPurl()}
-		if self.gitLink is not None:
-			info['gitLink']=self.gitLink
 		return info
 
 	def dumpAsPurl(self):
@@ -29,23 +22,20 @@ class PackageInfo:
 		release=""
 		if self.release is not None:
 			release="-"+self.release
-		if self.gitLink is None: 
-			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)
-		else:
-			return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)+"?"+"gitLink="+normalize.normalReplace(self.gitLink)
-
-def loadPackageInfo(jsonInfo):
-	osType=jsonInfo['osType']
-	if osType=='deb':
-		gitLink=jsonInfo['gitLink']
-	else:
-		gitLink=None
-	dist=jsonInfo['dist']
-	name=jsonInfo['name']
-	version=jsonInfo['version']
-	release=jsonInfo['release']
-	return PackageInfo(osType,dist,name,version,release,gitLink)
-
+		extraInfos=dict()
+		if self.arch is not None and self.arch!="":
+			extraInfos['arch']=self.arch
+		extraInfoRaw=''
+		is_first=True
+		for item,value in extraInfos.items():
+			if is_first is True:
+				extraInfoRaw+='?'
+			else:
+				extraInfoRaw+='&'
+			extraInfoRaw+=item+'='+value
+		
+		return 'pkg:'+osKind+'/'+self.osType+'/'+normalize.normalReplace(self.name)+'@'+normalize.normalReplace(self.version+release)+'.'+normalize.normalReplace(self.dist)+extraInfoRaw
+		
 def loadPurl(purlStr):
 	info=purlStr.split(':',1)[1]
 	info_extra=info.split('?')
@@ -61,11 +51,11 @@ def loadPurl(purlStr):
 	dist=""
 	if len(version_dist)>1:
 		dist=version_dist[1]
-	gitLink=""
+	arch=""
 	if len(info_extra)>1:
 		extraInfo=info_extra[1]
 		for extra in extraInfo.split('&'):
 			ei=extra.split('=')
-			if ei[0]=='gitLink':
-				gitLink=ei[1]
-	return PackageInfo(osType,dist,name,version,release,gitLink)
+			if ei[0]=='arch':
+				arch=ei[1]
+	return PackageInfo(osType,dist,name,version,release,arch)

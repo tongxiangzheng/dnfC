@@ -1,5 +1,5 @@
 import autotest_src
-testName="cracklib"
+testName="createrepo_c"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]
