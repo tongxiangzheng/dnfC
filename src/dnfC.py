@@ -11,6 +11,8 @@ def runDnf(args,setyes=False):
 	for arg in args:
 		if arg=='-y':
 			setyes=True
+		if arg=='-n':
+			pass
 		elif arg.startswith('--genspdx'):
 			pass
 		elif arg.startswith('--gencyclonedx'):
