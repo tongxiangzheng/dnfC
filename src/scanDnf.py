@@ -8,6 +8,7 @@ from loguru import logger as log
 import normalize
 import json
 import loadConfig
+import spdxReader
 from spdx.spdxmain import spdxmain
 
 def downloadPackage(selectedPackage):
@@ -27,8 +28,17 @@ def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
 	else:
 		print(f'failed to query CVE: Request failed with status code {response.status_code}')
 		return {}
+	
+def checkIncludeDepends(spdxObj):
+	res=spdxReader.parseSpdxObj(spdxObj)
+	if len(res)!=0:
+		return True
+	else:
+		return False
+
 def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedxPath=None,dumpFileOnly=False):
 	assumeNo=False
+	noPackagesWillInstalled=True
 	dnfArgs=[]
 	for option in args:
 		if option=='--assumeno':
@@ -57,7 +67,10 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 	if dnfConfigure is None:
 		print('ERROR: cannot load config file in /etc/dnfC/config.json, please check config file ')
 		return False
+	haveOutput=False
 	for selectedPackage,willInstallPackages in selectedPackages_willInstallPackages.items():
+		if len(willInstallPackages)>0:
+			noPackagesWillInstalled=False
 		selectedPackageName=selectedPackage.fullName
 		depends=dict()
 		project_packages=dict()
@@ -80,9 +93,42 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
 		cves=queryCVE(spdxObj,dnfConfigure)
+		
+		for package in willInstallPackages:
+			if package==selectedPackage:
+				continue
+			packageFilePath=downloadPackage(package)
+			if packageFilePath is None:
+				continue
+			spdxPath=spdxmain(package.fullName,packageFilePath,[],'spdx')
+			with open(spdxPath,"r") as f:
+				spdxObj=json.load(f)
+			if not checkIncludeDepends(spdxObj):
+				continue
+			#print("find depends!!!")
+			#print(spdxPath)
+			dependsCves=queryCVE(spdxObj,dnfConfigure)
+			if dependsCves is None:
+				continue
+			for projectName,c in dependsCves.items():
+				if len(c)==0:
+					continue
+				if projectName not in cves[package.packageInfo.name]:
+					cves[package.packageInfo.name].extend(c)
+		
+		if cves is None:
+			continue
+		selectedPackage_cves=cves[selectedPackage.packageInfo.name]
+		for projectName,c in cves.items():
+			if len(c)==0:
+				continue
+			if projectName not in project_packages:
+				selectedPackage_cves.extend(c)
+		cves[selectedPackage.packageInfo.name]=selectedPackage_cves
 		for projectName,cves in cves.items():
 			if len(cves)==0:
 				continue
+			haveOutput=True
 			print("package: ",end='')
 			first=True
 			for packageName in project_packages[projectName]:
@@ -93,9 +139,13 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 				print(packageName,end='')
 			print(" have cve:")
 			for cve in cves:
-				print(" "+cve)
+				print(" "+cve['name']+", score: "+str(cve['score']))
 	if assumeNo is True or dumpFileOnly is True:
 		return False
+	if noPackagesWillInstalled is True:
+		return True
+	if haveOutput is False:
+		print("All packages have no CVE")
 	
 	print('Are you sure to continue? (y/n)')
 	userinput=input()
