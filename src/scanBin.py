@@ -57,7 +57,8 @@ def querypackageInfo(filePaths):
 		provides=parseProvides(filePath)
 		
 		p=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,rpmInfo['name'],rpmInfo['version'],rpmInfo['release'],osInfo.arch)
-		package=SpecificPackage.SpecificPackage(p,rpmInfo['fullName'],provides,requires,osInfo.arch,"willInstalled")
+		package=SpecificPackage.SpecificPackage(p,rpmInfo['fullName'],provides,requires,osInfo.arch,"willInstalled",fileName=filePath)
+		
 		res.append(package)
 	return res
 	
@@ -106,14 +107,9 @@ def scanBin(args):
 			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 		dependsList=list(depends.values())
 		if genSpdx is True:
-			spdxPath=spdxmain(package.fullName,package.fileName,dependsList,'spdx',spdxPath)
+			spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'spdx',spdxPath)
 		if genCyclonedx is True:
-			cyclonedxPath=spdxmain(package.fullName,package.fileName,dependsList,'cyclonedx',cyclonedxPath)
-		print("generate SBOM for: "+package.fullName)
-		if genSpdx is True:
-			spdxPath=spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'spdx',spdxPath)
-		if genCyclonedx is True:
-			cyclonedxPath=spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'cyclonedx',cyclonedxPath)
+			spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'cyclonedx',cyclonedxPath)
 		
 		print("generate SBOM for "+package.fullName)
 	return 0

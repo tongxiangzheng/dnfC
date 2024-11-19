@@ -15,6 +15,8 @@ class PackageInfo:
 			release="-"+self.release
 		version=self.version+release
 		info={'name':normalize.normalReplace(self.name),'version':normalize.normalReplace(version),'purl':self.dumpAsPurl()}
+		if self.arch is not None:
+			info['arch']=self.arch
 		return info
 
 	def dumpAsPurl(self):
@@ -30,6 +32,7 @@ class PackageInfo:
 		for item,value in extraInfos.items():
 			if is_first is True:
 				extraInfoRaw+='?'
+				is_first=False
 			else:
 				extraInfoRaw+='&'
 			extraInfoRaw+=item+'='+value

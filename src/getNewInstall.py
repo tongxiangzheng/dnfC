@@ -69,7 +69,9 @@ def readStr(f):
 def getInstalledPackageInfo(sourcesListManager:SourcesListManager.SourcesListManager):
 	res=[]
 	with os.popen("/usr/bin/dnf list --installed") as f:
-		readStr(f)
+		while readStr(f)!="Installed":
+			#ignore Waiting for process with pid xxx to finish.
+			pass
 		readStr(f)		#ignore [Installed,Packages]
 		while True:
 			name_arch=readStr(f)

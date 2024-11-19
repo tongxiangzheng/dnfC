@@ -100,7 +100,9 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 	p = Popen("/usr/bin/dnf list --installed", shell=True, stdout=PIPE, stderr=PIPE)
 	stdout, stderr = p.communicate()
 	f=io.StringIO(stdout.decode())
-	readStr(f)
+	while readStr(f)!="Installed":
+		#ignore Waiting for process with pid xxx to finish.
+		pass
 	readStr(f)		#ignore [Installed,Packages]
 	while True:
 		name_arch=readStr(f)
@@ -109,7 +111,7 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 		fullName=name_arch.split('.')[0]
 		arch=name_arch.split('.')[-1]
 		if len(name_arch.split('.'))!=2:
-			raise Exception("unexpected format")
+			raise Exception("unexpected format: "+name_arch)
 		version_release=readStr(f)
 		version,release=RepoFileManager.splitVersionRelease(version_release)
 		dist=release.rsplit('.',1)[1]

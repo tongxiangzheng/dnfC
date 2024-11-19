@@ -97,7 +97,7 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 	if assumeNo is True or dumpFileOnly is True:
 		return False
 	
-	print('Are you true to continue? (y/n)')
+	print('Are you sure to continue? (y/n)')
 	userinput=input()
 	if userinput=='y':
 		return True
