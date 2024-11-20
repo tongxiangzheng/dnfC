@@ -13,7 +13,7 @@ class SourceConfigItem:
 		#self.machineArch=machineArch
 	def getRepoFileManager(self):
 		if self.repoFileManager is None:
-			self.repoFileManager=RepoFileManager.RepoFileManager(self.primaryFilePath,osInfo.OSName,self.dist,self.repoURL)
+			self.repoFileManager=RepoFileManager.RepoFileManager(self.primaryFilePath,osInfo.OSName,osInfo.OSDist,self.repoURL)
 	def getSpecificPackage(self,name,version,release,arch)->SpecificPackage.SpecificPackage:
 		self.getRepoFileManager()
 		return self.repoFileManager.queryPackage(name,version,release,arch)

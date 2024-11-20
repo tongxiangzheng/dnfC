@@ -41,7 +41,7 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 	noPackagesWillInstalled=True
 	dnfArgs=[]
 	for option in args:
-		if option=='--assumeno':
+		if option=='--assumeno' or option=='-n':
 			assumeNo=True
 		elif option.startswith('--genspdx'):
 			genSpdx=True
@@ -118,7 +118,10 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 		
 		if cves is None:
 			continue
-		selectedPackage_cves=cves[selectedPackage.packageInfo.name]
+		if selectedPackage.packageInfo.name in cves:
+			selectedPackage_cves=cves[selectedPackage.packageInfo.name]
+		else:
+			selectedPackage_cves=[]
 		for projectName,c in cves.items():
 			if len(c)==0:
 				continue

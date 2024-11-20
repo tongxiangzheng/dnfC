@@ -99,6 +99,12 @@ def getNewInstall(args,sourcesListManager:SourcesListManager.SourcesListManager,
 	cmd="/usr/bin/dnf install --assumeno"
 	packages=[]
 	for arg in args:
+		if arg.startswith('--genspdx'):
+			continue
+		if arg.startswith('--gencyclonedx'):
+			continue
+		if arg.startswith('-n') or arg=='--assumeno':
+			continue
 		if '(' in arg or ')' in arg:
 			cmd+=" '"+arg+"'"
 		else:
