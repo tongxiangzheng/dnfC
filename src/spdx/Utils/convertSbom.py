@@ -538,18 +538,26 @@ def convertCyclonedx(syft_json,project_name,output_file_cyclone,ExterDependencie
 
     #处理外部依赖
     for externalDependency in ExterDependencies:
-        exterpackageRef =f"pkg:deb/debian/{externalDependency.name}@{externalDependency.version}?package-id={uuid.uuid4()}"
+        purl = externalDependency.purl
+        if purl == "":
+            exterpackageRef =f"pkg:unknown/unknown/unknown@unknown?package-id={uuid.uuid4()}"
+        else:
+            exterpackageRef =f"{purl}?package-id={uuid.uuid4()}"
+        arch = externalDependency.arch
+        dscLink = externalDependency.dscLink
         component = Component(
             type = ComponentType.LIBRARY,
             name= externalDependency.name,
             #group=
             version= externalDependency.version,
             bom_ref=exterpackageRef,
-            purl=PackageURL('deb','debian',externalDependency.name,externalDependency.version),
+            # purl=PackageURL('deb','debian',externalDependency.name,externalDependency.version),
             description='External Dependency',
             properties = [
                 Property(name="syft:package:type", value='Deb'),
-                Property(name="syft:package:purl", value=f"pkg:deb/debian/{externalDependency.name}@{externalDependency.version}")
+                Property(name="syft:package:purl", value=purl),
+                
+
             ],
         )
         bom.components.add(component)
@@ -558,8 +566,12 @@ def convertCyclonedx(syft_json,project_name,output_file_cyclone,ExterDependencie
     #处理内部依赖
     artifacts = syft_json['artifacts']
     for artifact in artifacts:
-        innerpackageRef = f"{artifact['purl']}?package-id={artifact['id']}"
-        purlString = artifact['purl']
+        purl_artifact = artifact['purl']
+        if purl_artifact == "":
+            innerpackageRef = f"pkg:unknown/unknown/unknown@unknown?package-id={artifact['id']}"
+        else:
+            innerpackageRef = f"{purl_artifact}?package-id={artifact['id']}"
+        # purlString = artifact['purl']
         # organization = re.search(r"pkg:(\w+)/", purlString).group(1)
         # groups = re.search(r"/(\w+)/", purlString).group(1)
         component1 = Component(
@@ -582,10 +594,6 @@ def convertCyclonedx(syft_json,project_name,output_file_cyclone,ExterDependencie
         )
         bom.components.add(component1)
         bom.register_dependency(root_component, [component1])
-
-
-
-
 
     # endregion build the BOM
 
