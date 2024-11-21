@@ -51,6 +51,8 @@ def user_main(args, exit_code=False):
 			errcode=scanBin.scanBin(args[1:])
 		elif args[0]=='scansrc':
 			errcode=scanSrc.scanSrc(args[1:])
+		elif args[0]=='queryCVE':
+			errcode=scanSrc.scanSrc(args[1:])
 	if errcode is None:
 		errcode=runDnf(args)
 

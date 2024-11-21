@@ -3,7 +3,7 @@ DIR = os.path.split(os.path.abspath(__file__))[0]
 import getNewInstall
 import SourcesListManager
 import nwkTools
-import requests
+import queryCVE
 from loguru import logger as log
 import normalize
 import json
@@ -13,21 +13,6 @@ from spdx.spdxmain import spdxmain
 
 def downloadPackage(selectedPackage):
 	return nwkTools.downloadFile(selectedPackage.repoURL+'/'+selectedPackage.fileName,'/tmp/dnfC/packages',normalize.normalReplace(selectedPackage.fileName.rsplit('/',1)[1]))
-
-def queryCVE(spdxObj,dnfConfigure:loadConfig.dnfcConfigure):
-	url=dnfConfigure.querycveURL
-	try:
-		response = requests.post(url, json=spdxObj)
-	except requests.exceptions.ConnectionError as e:
-		print("failed to query CVE: Unable to connect: "+url)
-		return {}
-	except Exception as e:
-		print(f'failed to query CVE: {e}')
-	if response.status_code == 200:
-		return response.json()
-	else:
-		print(f'failed to query CVE: Request failed with status code {response.status_code}')
-		return {}
 	
 def checkIncludeDepends(spdxObj):
 	res=spdxReader.parseSpdxObj(spdxObj)
@@ -92,7 +77,7 @@ def scanDnf(args,genSpdx=True,saveSpdxPath=None,genCyclonedx=False,saveCyclonedx
 			cyclonedxPath=spdxmain(normalize.normalReplace(selectedPackageName),packageFilePath,dependsList,'cyclonedx',saveCyclonedxPath)
 		with open(spdxPath,"r") as f:
 			spdxObj=json.load(f)
-		cves=queryCVE(spdxObj,dnfConfigure)
+		cves=queryCVE.queryCVE(spdxObj,dnfConfigure)
 		
 		for package in willInstallPackages:
 			if package==selectedPackage:
