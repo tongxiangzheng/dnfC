@@ -23,7 +23,7 @@ def parseSpdxObj(spdxObj,duplicate_removal=True):
 	packages=spdxObj['packages']
 	for package in packages:
 		packageType=package['description']
-		if packageType.lower()=='deb' or packageType.lower()=='rpm':
+		if 'sourceInfo' in package and package['sourceInfo']=="External Dependency" and (packageType.lower()=='deb' or packageType.lower()=='rpm'):
 			packageinfo=None
 			for externalRefs in package['externalRefs']:
 				if externalRefs['referenceCategory']!='PACKAGE_MANAGER':
