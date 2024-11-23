@@ -1,5 +1,5 @@
 import autotest_src
-testName="createrepo_c"
+testName="crash"
 with open("openEulerinfo.txt") as f:
 	data=f.readlines()
 res=[]

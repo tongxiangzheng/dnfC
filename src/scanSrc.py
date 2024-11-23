@@ -123,7 +123,7 @@ def setInstalledPackagesStatus(sourcesListManager:SourcesListManager.SourcesList
 		if package is not None:
 			package.status="installed"
 		else:
-			packageInfo=PackageInfo.PackageInfo(osInfo.OSName,dist,fullName,version,release,arch)
+			packageInfo=PackageInfo.PackageInfo(osInfo.OSName,osInfo.OSDist,fullName,version,release,arch)
 			provides=parseProvides(fullName)
 			requires=parseRequires(fullName)
 			res.append(SpecificPackage.SpecificPackage(packageInfo,fullName,provides,requires,arch,"installed"))
