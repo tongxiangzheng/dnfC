@@ -4,7 +4,7 @@ import subprocess
 import json
 import pyrpm
 import shutil
-from spdx.Utils.convertSbom import convertSpdx, convertSpdx_binaryRPM,convertCyclonedx
+from spdx.Utils.convertSbom import convertCyclonedx_rpm, convertSpdx, convertSpdx_binaryRPM,convertCyclonedx
 syft_path = '/usr/share/dnfC/spdx/syft/syft'
 syft_path11 = '/usr/share/dnfC/spdx/syft11/syft'
 #对rpm的二进制包进行预处理，得到相关路径
@@ -104,7 +104,7 @@ def binaryRpmScan(scan_path,output_file,ExternalDependencies,sbomType):
     # convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
         convertSpdx_binaryRPM(syft_json, project_name, output_file,ExternalDependencies)
     if sbomType == 'cyclonedx':
-        convertCyclonedx(syft_json,project_name,output_file,ExternalDependencies)
+        convertCyclonedx_rpm(syft_json,project_name,output_file,ExternalDependencies)
 #scan_path = "/home/jiliqiang/RPM/rpm/glassfish-jaxb-2.3.1-150200.5.5.9.noarch.rpm"
 # scan_path = "/home/jiliqiang/RPM/rpm/keepass-2.54-2.mga9.noarch.rpm"
 # output_file = "/home/jiliqiang/RPM/rpm/SBOM/keepass-2.54-2.mga9.noarch.rpm.spdx.json"

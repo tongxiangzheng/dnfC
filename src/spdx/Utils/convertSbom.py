@@ -28,7 +28,7 @@ from spdx_tools.spdx.validation.validation_message import ValidationMessage
 from spdx_tools.spdx.writer.write_anything import write_file
 import uuid
 import  re
-
+import normalize
 #cyclonedx格式
 from typing import TYPE_CHECKING
 
@@ -91,7 +91,7 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
         package_exterDependency.external_references.append(ExternalPackageRef(
             category=ExternalPackageRefCategory.PACKAGE_MANAGER,
             reference_type="purl",
-            locator=f"pkg:deb/debian/{exterDependency.name}@{exterDependency.version}"
+            locator=exterDependency.purl
         ))
         document.packages.append(package_exterDependency)
     # 获取source信息
@@ -101,7 +101,8 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
     name = source['name'].replace("/", "-")
     spdx = ''
     if type == 'directory':
-        projectStr = project_name.replace("/", "-").replace("_", "-").replace("@", "")
+        # projectStr = project_name.replace("/", "-").replace("_", "-").replace("@", "")
+        projectStr = normalize.normalReplace(project_name)
         spdx = f"SPDXRef-DocumentRoot-Directory-{projectStr}"
     elif type == 'file':
         spdx = f"SPDXRef-DocumentRoot-File-{name}"
@@ -133,7 +134,8 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             accessPath=location['accessPath']
             annotations=location['annotations']
         licenses = artifact['licenses']
-        tempName = artifact['name'].replace("_","-").replace("@","").replace("/","-")
+        # tempName = artifact['name'].replace("_","-").replace("@","").replace("/","-")
+        tempName = normalize.normalReplace(artifact['name'])
         spdx_id_result=f"SPDXRef-Package-{artifact['type']}---{tempName}-{uuid.uuid4()}"
         id = artifact['id']
         id_spdxId[id]=spdx_id_result
@@ -227,7 +229,8 @@ def convertSpdx(syft_json,project_name,output_file,ExterDependencies):
             fileName = location['path']
             if fileName[0] == "/":
                 fileNameResult = '.' + fileName
-            spdxId = fileName.replace("/", "-").replace("_", "-").replace("@", "").replace("+", "-")
+            # spdxId = fileName.replace("/", "-").replace("_", "-").replace("@", "").replace("+", "-")
+            spdxId = normalize.normalReplace(fileName)
             spdxId_result = f"SPDXRef-File--{spdxId}-{uuid.uuid4()}"
             id = file['id']
             id_spdxId[id] = spdxId_result
@@ -344,7 +347,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
     name = source['name'].replace("/", "-")
     spdx = ''
     if type == 'directory':
-        projectStr = project_name.replace("/", "-").replace("_", "-").replace("@", "").replace("+", "-")
+        # projectStr = project_name.replace("/", "-").replace("_", "-").replace("@", "").replace("+", "-")
+        projectStr = normalize.normalReplace(project_name)
         spdx = f"SPDXRef-DocumentRoot-Directory-{projectStr}"
     elif type == 'file':
         spdx = f"SPDXRef-DocumentRoot-File-{name}"
@@ -377,8 +381,9 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
             accessPath = location['accessPath']
             annotations = location['annotations']
         licenses = artifact['licenses']
-        tempName = artifact['name'].replace("_", "-").replace("@", "").replace("/", "-")
+        # tempName = artifact['name'].replace("_", "-").replace("@", "").replace("/", "-")
         # tempName = artifact['name'].replace("_", "-")
+        tempName = normalize.normalReplace(artifact['name'])
         spdx_id_result = f"SPDXRef-Package-{artifact['type']}---{tempName}-{uuid.uuid4()}"
         id = artifact['id']
         id_spdxId[id] = spdx_id_result
@@ -466,7 +471,8 @@ def convertSpdx_binaryRPM(syft_json, project_name, output_file,purlList):
             fileName = location['path']
             if fileName[0] == "/":
                 fileNameResult = '.' + fileName
-            spdxId = fileName.replace("/", "-").replace("_", "-")
+            # spdxId = fileName.replace("/", "-").replace("_", "-")
+            spdxId = normalize.normalReplace(fileName)
             spdxId_result = f"SPDXRef-File--{spdxId}-{uuid.uuid4()}"
             id = file['id']
             id_spdxId[id] = spdxId_result
@@ -555,6 +561,116 @@ def convertCyclonedx(syft_json,project_name,output_file_cyclone,ExterDependencie
             description='External Dependency',
             properties = [
                 Property(name="syft:package:type", value='Deb'),
+                Property(name="syft:package:purl", value=purl),
+                
+
+            ],
+        )
+        bom.components.add(component)
+        bom.register_dependency(root_component, [component])
+
+    #处理内部依赖
+    artifacts = syft_json['artifacts']
+    for artifact in artifacts:
+        purl_artifact = artifact['purl']
+        if purl_artifact == "":
+            innerpackageRef = f"pkg:unknown/unknown/unknown@unknown?package-id={artifact['id']}"
+        else:
+            innerpackageRef = f"{purl_artifact}?package-id={artifact['id']}"
+        # purlString = artifact['purl']
+        # organization = re.search(r"pkg:(\w+)/", purlString).group(1)
+        # groups = re.search(r"/(\w+)/", purlString).group(1)
+        component1 = Component(
+            type = ComponentType.LIBRARY,
+            name=artifact['name'],
+            #group='acme',
+            version=artifact['version'],
+            #licenses=[lc_factory.make_from_string('(c) 2021 Acme inc.')],
+            # supplier=OrganizationalEntity(
+            #     name='Acme Inc',
+            #     urls=[XsUri('https://www.acme.org')]
+            # ),
+            bom_ref=innerpackageRef,
+            description= 'Inner Dependency',
+            properties=[
+                Property(name="syft:package:type",value=artifact['type']),
+                Property(name="syft:package:purl",value=artifact['purl'])
+            ]
+            #purl=PackageURL(organization,groups,artifact['name'],artifact['version'])
+        )
+        bom.components.add(component1)
+        bom.register_dependency(root_component, [component1])
+
+    # endregion build the BOM
+
+    # region JSON
+    """demo with explicit instructions for SchemaVersion, outputter and validator"""
+
+    my_json_outputter: 'JsonOutputter' = JsonV1Dot5(bom)
+    serialized_json = my_json_outputter.output_as_string(indent=2)
+    my_json_outputter.output_to_file(output_file_cyclone,True)
+
+    print(serialized_json)
+    my_json_validator = JsonStrictValidator(SchemaVersion.V1_6)
+    try:
+        validation_errors = my_json_validator.validate_str(serialized_json)
+        if validation_errors:
+            print('JSON invalid', 'ValidationError:', repr(validation_errors), sep='\n', file=sys.stderr)
+            sys.exit(2)
+        print('JSON valid')
+    except MissingOptionalDependencyException as error:
+        print('JSON-validation was skipped due to', error)
+
+    # endregion JSON
+
+    print('', '=' * 30, '', sep='\n')
+
+def convertCyclonedx_rpm(syft_json,project_name,output_file_cyclone,ExterDependencies):
+    lc_factory = LicenseFactory()
+    # region build the BOM
+
+    bom = Bom()
+    bom.metadata.component = root_component = Component(
+        name=project_name,
+        type=ComponentType.FILE,
+        #licenses=[lc_factory.make_from_string('MIT')],
+        bom_ref='myApp',
+
+    )
+    # bom.metadata.tools = Tool(
+    #     name='jiliqiang',
+    #     version='1.0.0',
+    #
+    # )
+    # bom.metadata.tools = Component(
+    #     type = ComponentType.APPLICATION,
+    #     author= 'ISCA',
+    #     name = 'jiliqiang',
+    #     version='1.0.0',
+    # )
+    # 当前的时间
+    current_time = datetime.now()
+    bom.metadata.timestamp=current_time
+
+    #处理外部依赖
+    for externalDependency in ExterDependencies:
+        purl = externalDependency.purl
+        if purl == "":
+            exterpackageRef =f"pkg:unknown/unknown/unknown@unknown?package-id={uuid.uuid4()}"
+        else:
+            exterpackageRef =f"{purl}?package-id={uuid.uuid4()}"
+        arch = externalDependency.arch
+        dscLink = externalDependency.dscLink
+        component = Component(
+            type = ComponentType.LIBRARY,
+            name= externalDependency.name,
+            #group=
+            version= externalDependency.version,
+            bom_ref=exterpackageRef,
+            # purl=PackageURL('deb','debian',externalDependency.name,externalDependency.version),
+            description='External Dependency',
+            properties = [
+                Property(name="syft:package:type", value='RPM'),
                 Property(name="syft:package:purl", value=purl),
                 
 

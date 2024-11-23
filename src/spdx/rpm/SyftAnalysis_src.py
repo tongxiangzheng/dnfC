@@ -9,7 +9,7 @@ import numpy as np
 import requests
 import json
 import shutil
-from spdx.Utils.convertSbom import convertSpdx,convertCyclonedx
+from spdx.Utils.convertSbom import convertCyclonedx_rpm, convertSpdx,convertCyclonedx
 from spdx.Utils.extract import decompress
 from spdx.Utils.java.mavenAnalysis import AnalysisVariabele
 
@@ -133,7 +133,7 @@ def scan_rpm_src_path(scan_path,output_file,dir_Path,ExternalDependencies,sbomTy
     if sbomType == 'spdx':
         convertSpdx(syft_json, project_name, output_file, ExternalDependencies)
     if sbomType == 'cyclonedx':
-        convertCyclonedx(syft_json, project_name, output_file, ExternalDependencies)
+        convertCyclonedx_rpm(syft_json, project_name, output_file, ExternalDependencies)
     # 生成cyclonedx的json
     # command_sbom = f"{syft_path} scan  {scan_path} -o cyclonedx-json"
     # cyclonedx_output = subprocess.check_output(command_sbom, shell=True)
