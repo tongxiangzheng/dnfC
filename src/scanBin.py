@@ -10,7 +10,7 @@ import subprocess
 import osInfo
 import scanSrc
 import shutil
-from spdx.spdxmain import spdxmain
+from spdx import spdxmain
 
 def parseRPMInfo(data):
 	rpmhdr={}
@@ -107,9 +107,9 @@ def scanBin(args):
 			depends[p.packageInfo.name+'@'+p.packageInfo.version]=p.packageInfo.dumpAsDict()
 		dependsList=list(depends.values())
 		if genSpdx is True:
-			spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'spdx',spdxPath)
+			spdxmain.spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'spdx',spdxPath)
 		if genCyclonedx is True:
-			spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'cyclonedx',cyclonedxPath)
+			spdxmain.spdxmain(normalize.normalReplace(package.fullName),package.fileName,dependsList,'cyclonedx',cyclonedxPath)
 		
 		print("generate SBOM for "+package.fullName)
 	return 0
