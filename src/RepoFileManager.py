@@ -149,12 +149,12 @@ class RepoFileManager:
 		for package in self.packages:
 			self.packageMap[package.fullName].append(package)
 	def queryPackage(self,name,version,release,arch):
-		#print("\nquery:")
-		#print(name,version,release,arch)
+		print("\nquery:")
+		print(name,version,release,arch)
 		e=SpecificPackage.PackageEntry(name,"EQ",version,release)
 		if name in self.packageMap:
 			for specificPackage in self.packageMap[name]:
-				#print(specificPackage.packageInfo.version,specificPackage.packageInfo.release,specificPackage.packageInfo.arch)
+				print(specificPackage.packageInfo.version,specificPackage.packageInfo.release,specificPackage.packageInfo.arch)
 				if SpecificPackage.compareEntry(specificPackage.getSelfEntry(),e)==0:
 					if specificPackage.packageInfo.arch==arch:
 							return specificPackage
